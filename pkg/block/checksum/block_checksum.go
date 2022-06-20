@@ -27,7 +27,7 @@ func (c *Checksum) String() string {
 
 func New(checksum int32) (*Checksum, error) {
 
-	address, err := address.New(checksum)
+	address, err := address.NewAddress(checksum)
 
 	if err != nil {
 		return nil, err

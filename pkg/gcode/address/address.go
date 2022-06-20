@@ -2,33 +2,20 @@ package address
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 )
-
-type AddressType interface {
-	string | int32 | float32
-}
 
 type Address struct {
 	value string
 }
 
-type Addresser interface {
-	ToString() string
-	ToInteger() (int, error)
-	ToFloat() (float32, error)
-
-	IsInteger() bool
-	IsFloat() bool
-	IsNumber() bool
+type AddressType interface {
+	string | int32 | float32
 }
 
 func (a *Address) String() string {
 	return a.value
-}
-
-func (a *Address) ToString() string {
-	return a.String()
 }
 
 func (a *Address) ToInteger() (int, error) {
@@ -57,7 +44,11 @@ func (a *Address) IsNumber() bool {
 	return a.IsInteger() || a.IsFloat()
 }
 
-func New[A AddressType](address A) (*Address, error) {
+func (a *Address) Compare(address fmt.Stringer) bool {
+	return a.value == address.String()
+}
+
+func NewAddress[A AddressType](address A) (*Address, error) {
 
 	var addressValue string
 

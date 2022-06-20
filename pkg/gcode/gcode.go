@@ -39,7 +39,7 @@ func New(word string, address string) (*Gcode, error) {
 		return nil, errors.New("gcode's address is invalid")
 	}
 
-	add, err := gcode_address.New(address)
+	add, err := gcode_address.NewAddress(address)
 
 	if err != nil {
 		return nil, err
