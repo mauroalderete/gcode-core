@@ -1,42 +1,37 @@
 package gcode
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
-	gcode_address "github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode/address"
+	gcode_address "github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
+	gcode_word "github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
 
 type Gcode struct {
-	word    string
-	address gcode_address.Address
-}
-
-type Gcoder interface {
-	Word() string
-	Address() gcode_address.Address
+	word    *gcode_word.Word
+	address *gcode_address.Address
 }
 
 func (g *Gcode) String() string {
 	return fmt.Sprintf("%s%s", g.word, g.address)
 }
 
-func (g *Gcode) Word() string {
-	return g.word
+func (g *Gcode) Word() gcode_word.Word {
+	return *g.word
 }
 
 func (g *Gcode) Address() gcode_address.Address {
-	return g.address
+	return *g.address
 }
 
-func New(word string, address string) (*Gcode, error) {
-	if len(word) != 1 {
-		return nil, errors.New("gcode's word is invalid")
-	}
+func (g *Gcode) Compare(gcode fmt.Stringer) bool {
+	return g.String() == gcode.String()
+}
 
-	if strings.ContainsAny(address, " \t\n\r") {
-		return nil, errors.New("gcode's address is invalid")
+func NewGcode(word string, address string) (*Gcode, error) {
+	wrd, err := gcode_word.NewWord(word)
+	if err != nil {
+		return nil, err
 	}
 
 	add, err := gcode_address.NewAddress(address)
@@ -46,9 +41,7 @@ func New(word string, address string) (*Gcode, error) {
 	}
 
 	return &Gcode{
-		word:    word,
-		address: *add,
+		word:    wrd,
+		address: add,
 	}, nil
 }
-
-//equal

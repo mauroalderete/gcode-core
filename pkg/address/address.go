@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Address struct {
@@ -48,7 +49,7 @@ func (a *Address) Compare(address fmt.Stringer) bool {
 	return a.value == address.String()
 }
 
-func NewAddress[A AddressType](address A) (*Address, error) {
+func NewAddress[T AddressType](address T) (*Address, error) {
 
 	var addressValue string
 
@@ -69,9 +70,21 @@ func NewAddress[A AddressType](address A) (*Address, error) {
 		}
 	}
 
+	err := isValid(addressValue)
+	if err != nil {
+		return nil, err
+	}
+
 	newAddress := Address{
 		value: addressValue,
 	}
 
 	return &newAddress, nil
+}
+
+func isValid(address string) error {
+	if strings.ContainsAny(address, " \t\n\r") {
+		return errors.New("gcode's address has invalid format")
+	}
+	return nil
 }

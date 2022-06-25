@@ -3,7 +3,7 @@ package gcode
 import (
 	"regexp"
 
-	blockchecksum "github.com/mauroalderete/gcode-skew-transform-cli/pkg/block/checksum"
+	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/check"
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
@@ -11,26 +11,12 @@ type Block struct {
 	lineNumber *gcode.Gcode
 	code       *gcode.Gcode
 	parameters *[]gcode.Gcode
-	checksum   *blockchecksum.Checksum
+	check      check.Checker
 	comment    *string
 }
 
-type Blocker interface {
-	LineNumber() gcode.Gcode
-	Code() gcode.Gcode
-	Parameters() []gcode.Gcode
-	Checksum() blockchecksum.Checksum
-	Comment() string
-
-	IsChecksumValid() (bool, error)
-
-	cleanOutputLine(string) string
-}
-
-type BlockerStringer interface {
-	ToLineComplete() string
-	ToCommand() string
-	ToCommandWithChecksum() string
+func (b *Block) String() string {
+	return b.ToLineComplete()
 }
 
 func (b *Block) LineNumber() gcode.Gcode {
@@ -42,8 +28,8 @@ func (b *Block) Code() gcode.Gcode {
 func (b *Block) Parameters() []gcode.Gcode {
 	return *b.parameters
 }
-func (b *Block) Checksum() blockchecksum.Checksum {
-	return *b.checksum
+func (b *Block) Checksum() check.Checker {
+	return b.check
 }
 func (b *Block) Comment() string {
 	return *b.comment
@@ -59,7 +45,7 @@ func (b *Block) ToCommand() string {
 		value += " " + g.String()
 	}
 
-	return b.cleanOutputLine(value)
+	return trimStringOut(value)
 }
 
 func (b *Block) ToCommandWithChecksum() string {
@@ -72,9 +58,10 @@ func (b *Block) ToCommandWithChecksum() string {
 		value += " " + g.String()
 	}
 
-	value += " " + b.checksum.String()
+	checkGcode := b.check.Value()
+	value += " " + checkGcode.String()
 
-	return b.cleanOutputLine(value)
+	return trimStringOut(value)
 }
 
 func (b *Block) ToLineComplete() string {
@@ -87,26 +74,23 @@ func (b *Block) ToLineComplete() string {
 		value += " " + g.String()
 	}
 
-	value += " " + b.checksum.String()
+	checkGcode := b.check.Value()
+	value += " " + checkGcode.String()
 	value += " " + *b.comment
 
-	return b.cleanOutputLine(value)
+	return trimStringOut(value)
 }
 
-func (b *Block) String() string {
-	return b.ToLineComplete()
-}
-
-func (b *Block) cleanOutputLine(line string) string {
+func trimStringOut(line string) string {
 	rx := regexp.MustCompile(`\s{2,}`)
 	return rx.ReplaceAllString(line, " ")
 }
 
 func (b *Block) IsChecksumValid() (bool, error) {
-	checksum, err := blockchecksum.GenerateChecksum(b.ToCommand())
+	checksum, err := check.NewCheck(check.CHECKSUM, b.ToCommand())
 	if err != nil {
 		return false, err
 	}
 
-	return checksum.Checksum() == b.checksum.Checksum(), nil
+	return checksum.Value() == b.check.Value(), nil
 }
