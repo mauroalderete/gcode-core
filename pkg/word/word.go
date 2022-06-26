@@ -32,7 +32,7 @@ func isValid(word string) error {
 	}
 
 	switch word[0] {
-	case 'G', 'M', 'T', 'D':
+	case 'G', 'M', 'T', 'S', 'P', 'X', 'Y', 'Z', 'U', 'V', 'W', 'I', 'J', 'D', 'H', 'F', 'R', 'Q', 'E', 'N', '*':
 		return nil
 	}
 
