@@ -20,13 +20,11 @@ func (a *Address) String() string {
 }
 
 func (a *Address) ToInteger() (int, error) {
-	value64, err := strconv.ParseInt(a.value, 10, 32)
-	return int(value64), err
+	return toInteger(a.value)
 }
 
 func (a *Address) ToFloat() (float32, error) {
-	value64, err := strconv.ParseFloat(a.value, 32)
-	return float32(value64), err
+	return toFloat(a.value)
 }
 
 func (a *Address) IsInteger() bool {
@@ -55,7 +53,9 @@ func NewAddress[T AddressType](address T) (*Address, error) {
 
 	switch a := any(&address).(type) {
 	case *string:
-		addressValue = *a
+		{
+			addressValue = *a
+		}
 	case *int32:
 		{
 			addressValue = strconv.FormatInt(int64(*a), 10)
@@ -83,8 +83,35 @@ func NewAddress[T AddressType](address T) (*Address, error) {
 }
 
 func isValid(address string) error {
-	if strings.ContainsAny(address, " \t\n\r") {
-		return errors.New("gcode's address has invalid format")
+
+	if strings.ContainsAny(address, "\t\n\r") {
+		return errors.New("gcode's address contain invalid chars")
 	}
+
+	_, err := toInteger(address)
+	_, err1 := toFloat(address)
+
+	if err == nil || err1 == nil {
+		return nil
+	}
+
+	if len(address) == 1 {
+		return fmt.Errorf("when a gcode's address isn't a numeric value, it must contain a string close in between double quotes, %s", address)
+	}
+
+	if address[0:1] != "\"" && address[len(address)-1:] != "\"" {
+		return fmt.Errorf("gcode's address value could not be regconocide like integer, float number or string, %s", address)
+	}
+
 	return nil
+}
+
+func toInteger(value string) (int, error) {
+	value64, err := strconv.ParseInt(value, 10, 32)
+	return int(value64), err
+}
+
+func toFloat(value string) (float32, error) {
+	value64, err := strconv.ParseFloat(value, 32)
+	return float32(value64), err
 }
