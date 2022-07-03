@@ -1,8 +1,6 @@
 package checksum
 
 import (
-	"strconv"
-
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
@@ -33,7 +31,7 @@ func NewChecksum(source string) (*Checksum, error) {
 		return nil, err
 	}
 
-	gcode, err := gcode.NewGcode(strconv.QuoteRune(CHECKSUM_WORD), address.String())
+	gcode, err := gcode.NewGcode(CHECKSUM_WORD, address.String())
 
 	if err != nil {
 		return nil, err
