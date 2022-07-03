@@ -57,7 +57,7 @@ func (g *Gcode) Compare(gcode fmt.Stringer) bool {
 // In general, a word consists of a single letter. Instead, an address can be a number (integer or float) or a string of characters between double-quotes.
 //
 // In any case, this method will verify the format of both parameters and return nil with an error description if necessary.
-func NewGcode(word string, address string) (*Gcode, error) {
+func NewGcode(word byte, address string) (*Gcode, error) {
 
 	// Try instace Word struct
 	wrd, err := gcode_word.NewWord(word)

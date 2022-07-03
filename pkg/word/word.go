@@ -15,20 +15,25 @@ import (
 //
 // Allow store a letter that mean the value of word.
 type Word struct {
-	value string
+	value byte
 }
 
-// String return the word value
+// String return the word value like string data type
 func (w *Word) String() string {
+	return string(w.value)
+}
+
+// Value return the word value like a byte data type
+func (w *Word) Value() byte {
 	return w.value
 }
 
 // NewWord is a constructor to instance a word struct
 //
-// Recive a value of the word that represent a gcode command.
+// Receive a byte that represents the word within the gcode command.
 // If the value is a word valid then will return a pointer a new word struct.
 // Else, will return a error message.
-func NewWord(word string) (*Word, error) {
+func NewWord(word byte) (*Word, error) {
 
 	err := isValid(word)
 	if err != nil {
@@ -42,17 +47,14 @@ func NewWord(word string) (*Word, error) {
 	return &newWord, nil
 }
 
-// isValid allow knowledge if a potential word value contain a value valid according a specification gcode
+// isValid allow knowledge if a potential word value contains a value valid according to a specification gcode
 //
-// The valid values are harcoding and they corresponds a [ReRap documentation]
+// The valid values are hard coding and they correspond to a [ReRap documentation]
 //
 // [ReRap documentation]: https://reprap.org/wiki/G-code
-func isValid(word string) error {
-	if len(word) != 1 {
-		return errors.New("gcode's word has invalid format")
-	}
+func isValid(word byte) error {
 
-	switch word[0] {
+	switch word {
 	case 'G', 'M', 'T', 'S', 'P', 'X', 'Y', 'Z', 'U', 'V', 'W', 'I', 'J', 'D', 'H', 'F', 'R', 'Q', 'E', 'N', '*':
 		return nil
 	}

@@ -2,6 +2,21 @@
 
 # 03/07/2022
 
+## Feature
+
+Afet analyzing, I decided to use a byte data type for the value of the word struct instead of string or rune, mainly for two reasons:
+
+- Optimize the use of memory.
+- The simple fact of the use a single byte we allow discard some series of validations like empty value or length value > 1
+
+Furthermore, I added a new function to return the byte value.
+
+And I translated the changes to the rest of the packages.
+
+I had to delete a test case made for the gcode package because it was no longer necessary.
+
+# 03/07/2022
+
 I added documentation to the word package with his respective examples.
 
 Furthermore, I created a new issue to review the word's value data type.
