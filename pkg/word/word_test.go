@@ -1,6 +1,7 @@
 package word_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -80,34 +81,48 @@ func TestNewWord(t *testing.T) {
 		invalidCases := []struct {
 			value         byte
 			expectedWord  *word.Word
-			expectedError string
+			expectedError word.WordInvalidValueError
 		}{
-			{'+', nil, "gcode's word has invalid value"},
-			{'-', nil, "gcode's word has invalid value"},
-			{' ', nil, "gcode's word has invalid value"},
-			{'\n', nil, "gcode's word has invalid value"},
-			{'$', nil, "gcode's word has invalid value"},
-			{'"', nil, "gcode's word has invalid value"},
-			{'0', nil, "gcode's word has invalid value"},
-			{'9', nil, "gcode's word has invalid value"},
+			{'+', nil, word.WordInvalidValueError{Value: '+'}},
+			{'-', nil, word.WordInvalidValueError{Value: '-'}},
+			{' ', nil, word.WordInvalidValueError{Value: ' '}},
+			{'\n', nil, word.WordInvalidValueError{Value: '\n'}},
+			{'$', nil, word.WordInvalidValueError{Value: '$'}},
+			{'"', nil, word.WordInvalidValueError{Value: '"'}},
+			{'0', nil, word.WordInvalidValueError{Value: '0'}},
+			{'9', nil, word.WordInvalidValueError{Value: '9'}},
 		}
 
-		for _, c := range invalidCases {
-			t.Run(fmt.Sprintf("test with %s", string(c.value)), func(t *testing.T) {
-				w, err := word.NewWord(c.value)
+		for _, tc := range invalidCases {
+			t.Run(fmt.Sprintf("test with %s", string(tc.value)), func(t *testing.T) {
+				w, err := word.NewWord(tc.value)
 
-				if w != c.expectedWord {
+				if w != tc.expectedWord {
 					t.Errorf("got %v, want nil", w)
 				}
 
 				if err == nil {
-					t.Errorf("got nil, want '%s'", "gcode's word has invalid value")
+					t.Errorf("got nil, want '%s'", tc.expectedError.Error())
 				}
 
-				if err.Error() != "gcode's word has invalid value" {
-					t.Errorf("got %s, want '%s'", err.Error(), "gcode's word has invalid value")
+				if errors.Is(err, &tc.expectedError) {
+					t.Errorf("got %s, want '%s'", err.Error(), tc.expectedError.Error())
 				}
 			})
 		}
 	})
+}
+
+func TestWordInvalidValueError_Error(t *testing.T) {
+
+	const value = ';'
+	const expected = "gcode's word has invalid value: " + string(value)
+
+	t.Run(fmt.Sprintf("with %s", string(value)), func(t *testing.T) {
+		err := word.WordInvalidValueError{Value: ';'}
+		if err.Error() != expected {
+			t.Errorf("got %s, want %s", err.Error(), expected)
+		}
+	})
+
 }
