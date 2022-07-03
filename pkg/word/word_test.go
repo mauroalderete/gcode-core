@@ -8,7 +8,7 @@ import (
 
 func ExampleNewWord() {
 
-	w, err := word.NewWord("M")
+	w, err := word.NewWord('M')
 	if err != nil {
 		_ = fmt.Errorf("%s:", err.Error())
 		return
@@ -17,4 +17,28 @@ func ExampleNewWord() {
 	fmt.Printf("%s\n", w.String())
 
 	// Output: M
+}
+
+func ExampleWord_String() {
+	w, err := word.NewWord('M')
+	if err != nil {
+		_ = fmt.Errorf("%s:", err.Error())
+		return
+	}
+
+	fmt.Printf("%s\n", w.String())
+
+	// Output: M
+}
+
+func ExampleWord_Value() {
+	w, err := word.NewWord('M')
+	if err != nil {
+		_ = fmt.Errorf("%s:", err.Error())
+		return
+	}
+
+	fmt.Printf("%v\n", w.Value())
+
+	// Output: 77
 }
