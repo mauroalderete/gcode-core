@@ -2,6 +2,12 @@
 
 # 03/07/2022
 
+I added documentation to the word package with his respective examples.
+
+Furthermore, I created a new issue to review the word's value data type.
+
+# 03/07/2022
+
 ## Feature
 
 Include Godocs to gcode package.
