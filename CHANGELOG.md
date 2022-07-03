@@ -1,5 +1,24 @@
 # CHANGELOG
 
+# 03/07/2022
+
+## Feature
+
+Include Godocs to gcode package.
+
+Include simple unit test to gcode package.
+
+## Plans
+
+I going to begin to use *Github Projects* to manage issues and plans. Hence, this project will have various changes.
+In principle, I will probe the new workflow proposed by *Github* using issues and pull requests with the support of *Github Projects* and his tables, graphs, etc...
+
+Then, I will review how I go to implement the address package. It requires a critical decision that defines the paradigm of the project.
+
+Later, I will complete the current packages with his respective test and godocs, before of realise serious changes to the repositories and the project.
+
+The target is to make a CLI tool that allows the management of any 3d printer based gcode file. For example, a simple subcommand that applies transforms on coordinates like a correction skew.
+
 # 25/06/2022
 
 ## Feature
