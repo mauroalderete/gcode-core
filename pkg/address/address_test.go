@@ -2,6 +2,7 @@ package address_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
@@ -34,19 +35,22 @@ func TestNewAddress(t *testing.T) {
 			{"\"ABC'X'Y'Z;\"\"\"\" 123\"", nil},
 		}
 
-		for _, c := range cases {
-			add, err := address.NewAddress(c.value)
-			if !(err == nil && c.errorExpected == nil) {
-				t.Errorf("expected nil but got %v", err)
-			}
+		for i, c := range cases {
 
-			if !errors.Is(err, c.errorExpected) {
-				t.Errorf("error type not match, got %v, want %v", err, c.errorExpected)
-			}
+			t.Run(fmt.Sprintf("case (%v)", i), func(t *testing.T) {
+				add, err := address.NewAddress(c.value)
+				if err != nil && c.errorExpected == nil {
+					t.Errorf("expected nil but got %v", err)
+				}
 
-			if add.CompareValue(c.value) {
-				t.Errorf("string address not match, got %v, want %v", add.Value(), c.value)
-			}
+				if !errors.Is(err, c.errorExpected) {
+					t.Errorf("error type not match, got %v, want %v", err, c.errorExpected)
+				}
+
+				if !add.CompareValue(c.value) {
+					t.Errorf("string address not match, got %v, want %v", add.Value(), c.value)
+				}
+			})
 		}
 	})
 }
