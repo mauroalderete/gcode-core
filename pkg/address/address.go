@@ -82,8 +82,14 @@ func isAddressStringValid(address string) error {
 		return &AddressStringContainInvalidCharsError{Value: address}
 	}
 
-	if address[0] != '"' && address[len(address)-1] != '"' {
-		return &AddressStringContainInvalidCharsError{}
+	if !(address[0] == '"' && address[len(address)-1] == '"') {
+		return &AddressStringQuoteError{}
+	}
+
+	for _, v := range strings.Split(address[1:len(address)-1], "\"\"") {
+		if strings.ContainsRune(v, '"') {
+			return &AddressStringQuoteError{}
+		}
 	}
 
 	return nil
