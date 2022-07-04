@@ -9,6 +9,90 @@ import (
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 )
 
+func ExampleAddress_String() {
+	add, err := address.NewAddress("\"Hola Mundo!\"")
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %s\n", add.String())
+
+	// Output: address value is: ""Hola Mundo!""
+}
+
+func ExampleAddress_String_second() {
+	add, err := address.NewAddress[float32](12)
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %s\n", add.String())
+
+	// Output: address value is: 12
+}
+
+func ExampleAddress_Value() {
+	add, err := address.NewAddress[float32](12)
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	var value float32 = add.Value()
+	fmt.Printf("address value is: %v\n", value)
+
+	// Output: address value is: 12
+}
+
+func ExampleAddress_Compare() {
+	addBase, err := address.NewAddress[float32](math.Pi)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	addTarget, err := address.NewAddress[float32](math.Pi)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	if addBase.Compare(*addTarget) {
+		fmt.Println("both addresses are equals")
+	} else {
+		fmt.Println("both addresses are diferents")
+	}
+
+	// Output: both addresses are equals
+}
+
+func ExampleAddress_Compare_second() {
+	addBase, err := address.NewAddress[float32](math.Pi)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	addTarget, err := address.NewAddress[float32](3.1415)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	if addBase.Compare(*addTarget) {
+		fmt.Println("both addresses are equals")
+	} else {
+		fmt.Println("both addresses are diferents")
+	}
+
+	// Output: both addresses are diferents
+}
+
 func TestNewAddress(t *testing.T) {
 	t.Run("construct string address", func(t *testing.T) {
 
@@ -179,6 +263,57 @@ func TestNewAddress(t *testing.T) {
 					t.Errorf("got %v address, want %v", add.Value(), c)
 				}
 			})
+		}
+	})
+}
+
+func TestAddress_AddressStringContainInvalidCharsError(t *testing.T) {
+	t.Run("valid message", func(t *testing.T) {
+		const value = "\"\n\""
+		const expected = "gcode's address string contain invalid chars: " + value
+
+		_, err := address.NewAddress(value)
+		if err == nil {
+			t.Errorf("expected nil error but got %v", err)
+			return
+		}
+
+		if err.Error() != expected {
+			t.Errorf("got %v, want %v", err, expected)
+		}
+	})
+}
+
+func TestAddress_AddressStringQuoteError(t *testing.T) {
+	t.Run("valid message", func(t *testing.T) {
+		const value = "some"
+		const expected = "gcode's address string has an invalid use of the quotes: "
+
+		_, err := address.NewAddress(value)
+		if err == nil {
+			t.Errorf("expected nil error but got %v", err)
+			return
+		}
+
+		if err.Error() != expected {
+			t.Errorf("got %v, want %v", err, expected)
+		}
+	})
+}
+
+func TestAddress_AddressStringTooShortError(t *testing.T) {
+	t.Run("valid message", func(t *testing.T) {
+		const value = ""
+		const expected = "gcode's address string is too short: " + value
+
+		_, err := address.NewAddress(value)
+		if err == nil {
+			t.Errorf("expected nil error but got %v", err)
+			return
+		}
+
+		if err.Error() != expected {
+			t.Errorf("got %v, want %v", err, expected)
 		}
 	})
 }
