@@ -3,6 +3,7 @@ package address_test
 import (
 	"errors"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
@@ -135,5 +136,49 @@ func TestNewAddress(t *testing.T) {
 				})
 			}
 		})
+	})
+
+	t.Run("constructor address integer", func(t *testing.T) {
+
+		cases := [5]int32{-111, -1, 0, 1, 111}
+
+		for i, c := range cases {
+			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+				add, err := address.NewAddress(c)
+				if err != nil {
+					t.Errorf("expected nil error but got %v", err)
+				}
+
+				if add == nil {
+					t.Errorf("got nil address, want %v", c)
+				}
+
+				if !add.CompareValue(c) {
+					t.Errorf("got %v address, want %v", add.Value(), c)
+				}
+			})
+		}
+	})
+
+	t.Run("constructor address float", func(t *testing.T) {
+
+		cases := [10]float32{-111, -1, 0, 1, 111, 7.5, -0.0002, math.Pi, math.E, math.MaxFloat32}
+
+		for i, c := range cases {
+			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+				add, err := address.NewAddress(c)
+				if err != nil {
+					t.Errorf("expected nil error but got %v", err)
+				}
+
+				if add == nil {
+					t.Errorf("got nil address, want %v", c)
+				}
+
+				if !add.CompareValue(c) {
+					t.Errorf("got %v address, want %v", add.Value(), c)
+				}
+			})
+		}
 	})
 }
