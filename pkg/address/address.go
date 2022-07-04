@@ -59,7 +59,7 @@ func (a *Address[T]) CompareValue(value T) bool {
 
 func NewAddress[T AddressType](address T) (*Address[T], error) {
 
-	if value, ok := any(&address).(string); ok {
+	if value, ok := any(address).(string); ok {
 		err := isAddressStringValid(value)
 		if err != nil {
 			return nil, err
@@ -74,12 +74,12 @@ func NewAddress[T AddressType](address T) (*Address[T], error) {
 }
 
 func isAddressStringValid(address string) error {
-	if strings.ContainsAny(address, "\t\n\r") {
-		return &AddressStringContainInvalidCharsError{Value: address}
-	}
-
 	if len(address) <= 1 {
 		return &AddressStringTooShortError{Value: address}
+	}
+
+	if strings.ContainsAny(address, "\t\n\r") {
+		return &AddressStringContainInvalidCharsError{Value: address}
 	}
 
 	if address[0] != '"' && address[len(address)-1] != '"' {
