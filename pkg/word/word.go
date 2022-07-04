@@ -8,7 +8,7 @@
 package word
 
 import (
-	"errors"
+	"fmt"
 )
 
 // Word struct implement a word of a gcode
@@ -16,6 +16,14 @@ import (
 // Allow store a letter that mean the value of word.
 type Word struct {
 	value byte
+}
+
+type WordInvalidValueError struct {
+	Value byte
+}
+
+func (e *WordInvalidValueError) Error() string {
+	return fmt.Errorf("gcode's word has invalid value: %s", string(e.Value)).Error()
 }
 
 // String return the word value like string data type
@@ -59,5 +67,5 @@ func isValid(word byte) error {
 		return nil
 	}
 
-	return errors.New("gcode's word has invalid value")
+	return &WordInvalidValueError{Value: word}
 }

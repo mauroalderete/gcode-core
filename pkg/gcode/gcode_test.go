@@ -1,6 +1,7 @@
 package gcode_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -48,13 +49,19 @@ func TestNewGcode(t *testing.T) {
 
 	t.Run("Gcode invalids", func(t *testing.T) {
 		t.Run("word invalid value", func(t *testing.T) {
-			_, err := gcode.NewGcode('+', "12")
-			if err == nil {
-				t.Errorf("got error == nil, want gcode's word has invalid value")
-				return
+			target := struct {
+				word    byte
+				address string
+			}{
+				word:    '+',
+				address: "12",
 			}
-			if err.Error() != "gcode's word has invalid value" {
-				t.Errorf("got %v, want gcode's word has invalid value", err)
+			expected := word.WordInvalidValueError{Value: target.word}
+
+			_, err := gcode.NewGcode(target.word, target.address)
+
+			if errors.Is(err, &expected) {
+				t.Errorf("got %s, want %s", err.Error(), expected.Error())
 			}
 		})
 
