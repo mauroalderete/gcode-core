@@ -8,11 +8,11 @@ import (
 const CHECKSUM_WORD = 42
 
 type Checksum struct {
-	value *gcode.Gcode
+	value gcode.Gcoder
 }
 
-func (c *Checksum) Value() gcode.Gcode {
-	return *c.value
+func (c *Checksum) Value() gcode.Gcoder {
+	return c.value
 }
 
 func NewChecksum(source string) (*Checksum, error) {
@@ -31,7 +31,7 @@ func NewChecksum(source string) (*Checksum, error) {
 		return nil, err
 	}
 
-	gcode, err := gcode.NewGcode(CHECKSUM_WORD, address.String())
+	gcode, err := gcode.NewGcodeAddressable(CHECKSUM_WORD, address.String())
 
 	if err != nil {
 		return nil, err
