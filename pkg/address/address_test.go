@@ -19,7 +19,7 @@ func ExampleAddress_String() {
 
 	fmt.Printf("address value is: %s\n", add.String())
 
-	// Output: address value is: ""Hola Mundo!""
+	// Output: address value is: "Hola Mundo!"
 }
 
 func ExampleAddress_String_second() {
