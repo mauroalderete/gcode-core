@@ -1,8 +1,8 @@
 package gcode_test
 
 import (
-	"errors"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
@@ -11,10 +11,10 @@ import (
 )
 
 func TestNewGcode(t *testing.T) {
-	t.Run("Gcode valids", func(t *testing.T) {
+	t.Run("valids", func(t *testing.T) {
 
-		t.Run("Gcode with integer address", func(t *testing.T) {
-			gc, err := gcode.NewGcode('X', "12")
+		t.Run("address integer", func(t *testing.T) {
+			gc, err := gcode.NewGcode[int32]('X', 12)
 			if err != nil {
 				t.Errorf("got %v, want X12", err)
 				return
@@ -24,8 +24,8 @@ func TestNewGcode(t *testing.T) {
 			}
 		})
 
-		t.Run("Gcode with float address", func(t *testing.T) {
-			gc, err := gcode.NewGcode('X', "12.3")
+		t.Run("address float", func(t *testing.T) {
+			gc, err := gcode.NewGcode[float32]('X', 12.3)
 			if err != nil {
 				t.Errorf("got %v, want X12.3", err)
 				return
@@ -35,7 +35,7 @@ func TestNewGcode(t *testing.T) {
 			}
 		})
 
-		t.Run("Gcode with string address", func(t *testing.T) {
+		t.Run("address string", func(t *testing.T) {
 			gc, err := gcode.NewGcode('X', "\"lorem ipsu\"")
 			if err != nil {
 				t.Errorf("got %v, want X\"lorem ipsu\"", err)
@@ -47,57 +47,47 @@ func TestNewGcode(t *testing.T) {
 		})
 	})
 
-	t.Run("Gcode invalids", func(t *testing.T) {
-		t.Run("word invalid value", func(t *testing.T) {
-			target := struct {
+	t.Run("invalids", func(t *testing.T) {
+
+		t.Run("word", func(t *testing.T) {
+			cases := []struct {
+				word    byte
+				address int32
+				err     error
+			}{
+				{'+', 2, &word.WordInvalidValueError{Value: '+'}},
+				{'\t', 2, &word.WordInvalidValueError{Value: '\t'}},
+				{'"', 2, &word.WordInvalidValueError{Value: '"'}},
+			}
+
+			for i, c := range cases {
+				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+					_, err := gcode.NewGcode(c.word, c.address)
+					if err.Error() != c.err.Error() {
+						t.Errorf("got %v, want %v", err, c.err)
+					}
+				})
+			}
+		})
+
+		t.Run("address string", func(t *testing.T) {
+			cases := []struct {
 				word    byte
 				address string
+				err     error
 			}{
-				word:    '+',
-				address: "12",
+				{'X', "", &address.AddressStringTooShortError{Value: ""}},
+				{'X', "\"\t\"", &address.AddressStringContainInvalidCharsError{Value: "\"\t\""}},
+				{'X', "\"\"\"", &address.AddressStringQuoteError{Value: ""}},
 			}
-			expected := word.WordInvalidValueError{Value: target.word}
 
-			_, err := gcode.NewGcode(target.word, target.address)
-
-			if errors.Is(err, &expected) {
-				t.Errorf("got %s, want %s", err.Error(), expected.Error())
-			}
-		})
-
-		t.Run("address with invalid characters", func(t *testing.T) {
-			const msg = "gcode's address contain invalid chars"
-			_, err := gcode.NewGcode('X', "\n")
-			if err == nil {
-				t.Errorf("got error == nil, %s", msg)
-				return
-			}
-			if err.Error() != msg {
-				t.Errorf("got %v, want %s", err, msg)
-			}
-		})
-
-		t.Run("address with single character not numeric", func(t *testing.T) {
-			const msg = "when a gcode's address isn't a numeric value, it must contain a string close in between double quotes, a"
-			_, err := gcode.NewGcode('X', "a")
-			if err == nil {
-				t.Errorf("got error == nil, %s", msg)
-				return
-			}
-			if err.Error() != msg {
-				t.Errorf("got %v, want %s", err, msg)
-			}
-		})
-
-		t.Run("address with data type invalid", func(t *testing.T) {
-			const msg = "gcode's address value could not be regconocide like integer, float number or string, 12.12.12"
-			_, err := gcode.NewGcode('X', "12.12.12")
-			if err == nil {
-				t.Errorf("got error == nil, %s", msg)
-				return
-			}
-			if err.Error() != msg {
-				t.Errorf("got %v, want %s", err, msg)
+			for i, c := range cases {
+				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+					_, err := gcode.NewGcode(c.word, c.address)
+					if err.Error() != c.err.Error() {
+						t.Errorf("got %v, want %v", err, c.err)
+					}
+				})
 			}
 		})
 	})
@@ -105,7 +95,7 @@ func TestNewGcode(t *testing.T) {
 
 func ExampleNewGcode() {
 
-	gc, err := gcode.NewGcode('X', "12.3")
+	gc, err := gcode.NewGcode[float32]('X', 12.3)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -118,7 +108,7 @@ func ExampleNewGcode() {
 
 func ExampleGcode_String() {
 
-	gc, err := gcode.NewGcode('X', "12.3")
+	gc, err := gcode.NewGcode('X', "\"Hola mundo!\"")
 	if err != nil {
 		_ = fmt.Errorf("%s", err.Error())
 		return
@@ -126,11 +116,11 @@ func ExampleGcode_String() {
 
 	fmt.Println(gc)
 
-	// Output: X12.3
+	// Output: X"Hola mundo!"
 }
 
 func ExampleGcode_Word() {
-	gc, err := gcode.NewGcode('D', "0")
+	gc, err := gcode.NewGcode[int32]('D', 0)
 	if err != nil {
 		_ = fmt.Errorf("%s", err.Error())
 		return
@@ -144,13 +134,13 @@ func ExampleGcode_Word() {
 }
 
 func ExampleGcode_Address() {
-	gc, err := gcode.NewGcode('N', "66555")
+	gc, err := gcode.NewGcode[int32]('N', 66555)
 	if err != nil {
 		_ = fmt.Errorf("%s", err.Error())
 		return
 	}
 
-	var a address.Address = gc.Address()
+	var a address.Address[int32] = gc.Address()
 
 	fmt.Println(a.String())
 
@@ -158,13 +148,13 @@ func ExampleGcode_Address() {
 }
 
 func ExampleGcode_Compare() {
-	gc1, err := gcode.NewGcode('G', "33")
+	gc1, err := gcode.NewGcode[float32]('G', math.Pi)
 	if err != nil {
 		_ = fmt.Errorf("%s", err.Error())
 		return
 	}
 
-	gc2, err := gcode.NewGcode('G', "34")
+	gc2, err := gcode.NewGcode[float32]('X', math.Pi)
 	if err != nil {
 		_ = fmt.Errorf("%s", err.Error())
 		return
