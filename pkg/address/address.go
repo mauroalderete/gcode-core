@@ -38,10 +38,6 @@ func (a *AddressStringTooShortError) Error() string {
 }
 
 func (a *Address[T]) String() string {
-	if value, ok := any(a.value).(string); ok {
-		return fmt.Sprintf("\"%s\"", value)
-	}
-
 	return fmt.Sprintf("%v", a.value)
 }
 
