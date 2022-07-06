@@ -16,20 +16,26 @@ import (
 	gcode_word "github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
 
+type Gcoder interface {
+	fmt.Stringer
+	Word() gcode_word.Word
+	HasAddress() bool
+}
+
 // Gcode implements a single g-code.
 //
-// Allow model a g-code command from two elements that coincide with a word struct and an address struct.
+// Allow model a gcode command from two elements that match with a word struct and an address struct.
+// A Gcode can contain only an AddressType data type. Is say, any value of the string, int32 or float32 data type.
 //
 // Word struct indicates the command.
-// Address struct indicates the value used by the command. Sometimes can be nil, if the command isn't used any value.
+// Address struct indicates the value used by the command. Can be nil, if the command isn't used any value.
 type Gcode struct {
-	word    *gcode_word.Word
-	address *gcode_address.Address
+	word *gcode_word.Word
 }
 
 // String return G-code formatted
 func (g *Gcode) String() string {
-	return fmt.Sprintf("%s%s", g.word, g.address)
+	return g.word.String()
 }
 
 // Word return the word struct that is contained in the G-code
@@ -37,27 +43,70 @@ func (g *Gcode) Word() gcode_word.Word {
 	return *g.word
 }
 
-// Address return the Address struct that is contained in the G-code
-func (g *Gcode) Address() gcode_address.Address {
-	return *g.address
+// Word return the word struct that is contained in the G-code
+func (g *Gcode) HasAddress() bool {
+	return false
 }
 
-// Compare allow take any type that implement Stringer interface and compare with the value of G-code
-//
-// Return true if the gcode parameter value is the same as that of the output format of G-code
-// Return false if not.
-func (g *Gcode) Compare(gcode fmt.Stringer) bool {
-	return g.String() == gcode.String()
+type GcodeAddresser[T gcode_address.AddressType] interface {
+	Gcoder
+	Address() *gcode_address.Address[T]
+}
+
+type GcodeAddressable[T gcode_address.AddressType] struct {
+	*Gcode
+	address *gcode_address.Address[T]
+}
+
+// String return G-code formatted
+func (g *GcodeAddressable[T]) String() string {
+	return fmt.Sprintf("%s%s", g.word.String(), g.address.String())
+}
+
+// Word return the word struct that is contained in the G-code
+func (g *GcodeAddressable[T]) Word() gcode_word.Word {
+	return *g.word
+}
+
+// Word return the word struct that is contained in the G-code
+func (g *GcodeAddressable[T]) HasAddress() bool {
+	return true
+}
+
+// Address return the Address struct that is contained in the Gcode.
+// The address returned can be implement an string, int32, float32 data types
+func (g *GcodeAddressable[T]) Address() *gcode_address.Address[T] {
+	return g.address
 }
 
 // NewGcode is the constructor to instance a G-code struct.
 //
-// Receive a word that represents the letter of the command and another string that represent the address of g-code.
+// Receive a word that represents the letter of the command and another string that represent the address of gcode.
 //
 // In general, a word consists of a single letter. Instead, an address can be a number (integer or float) or a string of characters between double-quotes.
 //
 // In any case, this method will verify the format of both parameters and return nil with an error description if necessary.
-func NewGcode(word byte, address string) (*Gcode, error) {
+func NewGcode(word byte) (Gcoder, error) {
+
+	// Try instace Word struct
+	wrd, err := gcode_word.NewWord(word)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Gcode{
+		word: wrd,
+	}, nil
+}
+
+// NewGcode is the constructor to instance a G-code struct.
+//
+// Receive a word that represents the letter of the command and another string that represent the address of gcode.
+//
+// In general, a word consists of a single letter. Instead, an address can be a number (integer or float) or a string of characters between double-quotes.
+//
+// In any case, this method will verify the format of both parameters and return nil with an error description if necessary.
+func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (GcodeAddresser[T], error) {
 
 	// Try instace Word struct
 	wrd, err := gcode_word.NewWord(word)
@@ -71,8 +120,10 @@ func NewGcode(word byte, address string) (*Gcode, error) {
 		return nil, err
 	}
 
-	return &Gcode{
-		word:    wrd,
+	return &GcodeAddressable[T]{
+		Gcode: &Gcode{
+			word: wrd,
+		},
 		address: add,
 	}, nil
 }

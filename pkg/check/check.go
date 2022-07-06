@@ -15,7 +15,7 @@ const (
 )
 
 type Checker interface {
-	Value() gcode.Gcode
+	Value() gcode.Gcoder
 }
 
 func NewCheck(kind CheckKind, data string) (Checker, error) {
