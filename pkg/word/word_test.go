@@ -124,5 +124,4 @@ func TestWordInvalidValueError_Error(t *testing.T) {
 			t.Errorf("got %s, want %s", err.Error(), expected)
 		}
 	})
-
 }
