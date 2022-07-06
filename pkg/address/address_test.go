@@ -9,6 +9,122 @@ import (
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 )
 
+func ExampleIsAddressStringValid() {
+	const s = "\"Hola \"\"Mundo\"\" \""
+
+	err := address.IsAddressStringValid(s)
+	if err != nil {
+		var containInvalidChars *address.AddressStringContainInvalidCharsError
+		if !errors.As(err, &containInvalidChars) {
+			_ = fmt.Errorf("invalid format: %v", containInvalidChars.Error())
+			return
+		}
+
+		var quoteError *address.AddressStringQuoteError
+		if !errors.As(err, &quoteError) {
+			_ = fmt.Errorf("invalid format: %v", quoteError.Error())
+			return
+		}
+
+		var tooShort *address.AddressStringTooShortError
+		if !errors.As(err, &tooShort) {
+			_ = fmt.Errorf("invalid format: %v", tooShort.Error())
+			return
+		}
+	}
+
+	fmt.Println("string has valid format")
+
+	// Output: string has valid format
+}
+
+func ExampleAddress() {
+	add, err := address.NewAddress[float32](12)
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	var value float32 = add.Value
+	fmt.Printf("address value is: %v\n", value)
+
+	// Output: address value is: 12
+}
+
+func ExampleAddress_second() {
+	add, err := address.NewAddress[float32](math.Pi)
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	add.Value = 3.1415
+
+	fmt.Printf("address value is: %v\n", add.String())
+
+	// Output: address value is: 3.1415
+}
+
+func ExampleNewAddress() {
+	add, err := address.NewAddress[int32](-23)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %s\n", add)
+
+	// Output: address value is: -23
+}
+
+func ExampleNewAddress_second() {
+	add, err := address.NewAddress[float32](math.Pi)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %s\n", add)
+
+	// Output: address value is: 3.1415927
+}
+
+func ExampleNewAddress_third() {
+	add, err := address.NewAddress("\"Hola Mundo!\"")
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %s\n", add)
+
+	// Output: address value is: "Hola Mundo!"
+}
+
+func ExampleAddress_Compare() {
+	addBase, err := address.NewAddress[float32](math.Pi)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	addTarget, err := address.NewAddress[float32](3.1415)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	if addBase.Compare(*addTarget) {
+		fmt.Println("both addresses are equals")
+	} else {
+		fmt.Println("both addresses are diferents")
+	}
+
+	// Output: both addresses are diferents
+}
+
 func ExampleAddress_String() {
 	add, err := address.NewAddress("\"Hola Mundo!\"")
 
@@ -33,64 +149,6 @@ func ExampleAddress_String_second() {
 	fmt.Printf("address value is: %s\n", add.String())
 
 	// Output: address value is: 12
-}
-
-func ExampleAddress_Value() {
-	add, err := address.NewAddress[float32](12)
-
-	if err != nil {
-		_ = fmt.Errorf("unexpected error: %v", err)
-		return
-	}
-
-	var value float32 = add.Value()
-	fmt.Printf("address value is: %v\n", value)
-
-	// Output: address value is: 12
-}
-
-func ExampleAddress_Compare() {
-	addBase, err := address.NewAddress[float32](math.Pi)
-	if err != nil {
-		_ = fmt.Errorf("unexpected error: %v", err)
-		return
-	}
-
-	addTarget, err := address.NewAddress[float32](math.Pi)
-	if err != nil {
-		_ = fmt.Errorf("unexpected error: %v", err)
-		return
-	}
-
-	if addBase.Compare(*addTarget) {
-		fmt.Println("both addresses are equals")
-	} else {
-		fmt.Println("both addresses are diferents")
-	}
-
-	// Output: both addresses are equals
-}
-
-func ExampleAddress_Compare_second() {
-	addBase, err := address.NewAddress[float32](math.Pi)
-	if err != nil {
-		_ = fmt.Errorf("unexpected error: %v", err)
-		return
-	}
-
-	addTarget, err := address.NewAddress[float32](3.1415)
-	if err != nil {
-		_ = fmt.Errorf("unexpected error: %v", err)
-		return
-	}
-
-	if addBase.Compare(*addTarget) {
-		fmt.Println("both addresses are equals")
-	} else {
-		fmt.Println("both addresses are diferents")
-	}
-
-	// Output: both addresses are diferents
 }
 
 func TestNewAddress(t *testing.T) {
@@ -119,10 +177,11 @@ func TestNewAddress(t *testing.T) {
 
 					if add == nil {
 						t.Errorf("got nil address string, want %v", c.value)
+						return
 					}
 
-					if !add.CompareValue(c.value) {
-						t.Errorf("address string not match, got %v, want %v", add.Value(), c.value)
+					if add.Value != c.value {
+						t.Errorf("address string not match, got %v, want %v", add.Value, c.value)
 					}
 				})
 			}
@@ -235,10 +294,11 @@ func TestNewAddress(t *testing.T) {
 
 				if add == nil {
 					t.Errorf("got nil address, want %v", c)
+					return
 				}
 
-				if !add.CompareValue(c) {
-					t.Errorf("got %v address, want %v", add.Value(), c)
+				if add.Value != c {
+					t.Errorf("got %v address, want %v", add.Value, c)
 				}
 			})
 		}
@@ -257,10 +317,11 @@ func TestNewAddress(t *testing.T) {
 
 				if add == nil {
 					t.Errorf("got nil address, want %v", c)
+					return
 				}
 
-				if !add.CompareValue(c) {
-					t.Errorf("got %v address, want %v", add.Value(), c)
+				if add.Value != c {
+					t.Errorf("got %v address, want %v", add.Value, c)
 				}
 			})
 		}
