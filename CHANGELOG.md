@@ -1,10 +1,23 @@
 # CHANGELOG
 
+# 08/07/2022
+
+## Feature
+
+Implement the new strategy defined in [#3](https://github.com/mauroalderete/gcode-skew-transform-cli/issues/3) to handle gcode addressability. It impact an various packages:
+
+- address: generic constructor, string method, validations rules and handle error
+- gcode: redefinition of package, including new structs and rename of others.
+- check/checksum: impact from gcode
+- block: implement the new gcode scheme, include a sample/skech/simple parse
+
+All packages, (since word package), improve his test, examples and documentations.
+
 # 03/07/2022
 
 ## Feature
 
-Afet analyzing, I decided to use a byte data type for the value of the word struct instead of string or rune, mainly for two reasons:
+After analyzing, I decided to use a byte data type for the value of the word struct instead of string or rune, mainly for two reasons:
 
 - Optimize the use of memory.
 - The simple fact of the use a single byte we allow discard some series of validations like empty value or length value > 1
