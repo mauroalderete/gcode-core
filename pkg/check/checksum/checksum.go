@@ -31,7 +31,7 @@ func NewChecksum(source string) (*Checksum, error) {
 		return nil, err
 	}
 
-	gcode, err := gcode.NewGcodeAddressable(CHECKSUM_WORD, address.String())
+	gcode, err := gcode.NewGcodeAddressable(CHECKSUM_WORD, address.Value)
 
 	if err != nil {
 		return nil, err
