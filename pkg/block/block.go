@@ -1,3 +1,24 @@
+// block package contains structs and methods to manage a gcode block
+//
+// A gcode block is a single line in the gcode file that contains almost a gcode expression.
+// It is an operation that a machine must execute.
+//
+// A block contains different sections that can be completed or not.
+//
+// - line number of the block. It can be null. Always has an int32 type address.
+//
+// - first gcode expression and main significance of the block. Always is present.
+//
+// - list of the rest of the gcode expression that adds information to the command. Can be empty.
+//
+// - special gcode that store the value of the verification of the integrity of the block
+//
+// - expression attached at the block with some comment. Can be empty
+//
+// This package allows storing the data that define a single gcode block.
+// A block struct be constructed from the Parse function that requires a line of the gcode file with a gcode block.
+//
+// The block struct can be export in different formats and can be verified if necessary.
 package block
 
 import (
@@ -10,92 +31,140 @@ import (
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
+const (
+	// BLOC_SEPARATOR defines a string used to separate the sections of the block when is exported as line string format
+	BLOCK_SEPARATOR = " "
+)
+
+// Block struct represents a single gcode block.
+//
+// Stores data and gcode expressions of each section of the block.
+//
+// His methods allow export of the block as a line string format or check of the integrity.
+//
+// To be constructed using the Parse function from a line of the gcode file.
 type Block struct {
+	// line number of the block. It can be null. Always has an int32 type address.
 	lineNumber *gcode.GcodeAddressable[int32]
-	command    gcode.Gcoder
+	// first gcode expression and main significance of the block. Always is present.
+	command gcode.Gcoder
+	// list of the rest of the gcode expression that adds information to the command. Can be empty.
 	parameters []gcode.Gcoder
-	check      check.Checker
-	comment    *string
+	// special gcode that store the value of the verification of the integrity of the block
+	check check.Checker
+	// expression attached at the block with some comment. Can be empty
+	comment *string
 }
 
+// String returns the block exported as single-line string format including check and comments section.
+//
+// It is the same invoke ToLineWithCheckAndComments method
 func (b *Block) String() string {
-	return b.ToCommandComplete()
+	return b.ToLineWithCheckAndComments()
 }
 
-func (b *Block) LineNumber() gcode.GcodeAddressable[int32] {
-	return *b.lineNumber
+// LineNumber returns a gcode addressable of the int32 type.
+//
+// Represent the line number of the block. It can be null. Always has an int32 type address.
+func (b *Block) LineNumber() *gcode.GcodeAddressable[int32] {
+	return b.lineNumber
 }
+
+// Command returns a gcoder struct. Can be addressable or not.
+//
+// Represent the first gcode expression and main significance of the block. Always is present.
 func (b *Block) Command() gcode.Gcoder {
 	return b.command
 }
+
+// Parameters return a list of gcoder structs. Each gcoder can be addressable or not.
+//
+// Parameters is a list of the rest of the gcode expression that adds information to the command. Can be empty.
 func (b *Block) Parameters() []gcode.Gcoder {
 	return b.parameters
 }
+
+// Checksum returns the checker struct if the line of the block contained one when the block was parsed.
+//
+// The Checker is a special gcode that store the value of the verification of the integrity of the block.
+//
+// Exists two methods of checking: CRC and Checksum. Actually, only CRC is supported.
 func (b *Block) Checksum() check.Checker {
 	return b.check
 }
-func (b *Block) Comment() string {
-	return *b.comment
+
+// Comment returns the string with the comment of the block. Or nil if there isn't one.
+//
+// Is an expression attached at the block with some comment. Can be empty.
+func (b *Block) Comment() *string {
+	return b.comment
 }
 
-func (b *Block) ToCommand() string {
-	value := ""
-
-	value += " " + b.lineNumber.String()
-	value += " " + b.command.String()
-
-	for _, g := range b.parameters {
-		value += " " + g.String()
-	}
-
-	return removeDuplicateSpaces(value)
-}
-
-func (b *Block) ToCommandWithCheck() string {
-	value := ""
-
-	value += " " + b.lineNumber.String()
-	value += " " + b.command.String()
-
-	for _, g := range b.parameters {
-		value += " " + g.String()
-	}
-
-	checkGcode := b.check.Value()
-	value += " " + checkGcode.String()
-
-	return removeDuplicateSpaces(value)
-}
-
-func (b *Block) ToCommandComplete() string {
-	value := ""
+// ToLine export the block as a single-line string format with minimal data for can be executed in a machine
+//
+// The line generated depends on the content of the gcode line in the file line used to be parsed when the block was constructed.
+//
+// This method tries to export the line number of the block, the command and the parameters. Sometimes a block can haven't available the line number. In these cases, this is ignored.
+//
+// Sometimes a block could haven't a command (and any parameters) if the line used to parse the block didn't have either command originally.
+func (b *Block) ToLine() string {
+	var values []string
 
 	if b.lineNumber != nil {
-		value += " " + b.lineNumber.String()
+		values = append(values, b.lineNumber.String())
 	}
+
 	if b.command != nil {
-		value += " " + b.command.String()
+		values = append(values, b.command.String())
 	}
 
 	if b.parameters != nil {
 		for _, g := range b.parameters {
-			value += " " + g.String()
+			values = append(values, g.String())
 		}
 	}
 
-	if b.check != nil {
-		value += " " + b.check.Value().String()
-	}
-
-	if b.comment != nil {
-		value += " " + *b.comment
-	}
-
-	return removeDuplicateSpaces(value)
+	return strings.Join(values, BLOCK_SEPARATOR)
 }
 
+// ToLineWithCheck exports the block as a single-line string format adding the check section.
+//
+// Use ToLine output and attach the check section if is available
+func (b *Block) ToLineWithCheck() string {
+	line := b.ToLine()
+
+	if b.check != nil {
+		checkGcode := b.check.Value()
+		line = strings.Join([]string{line, checkGcode.String()}, BLOCK_SEPARATOR)
+	}
+
+	return line
+}
+
+// ToLineWithCheckAndComments exports the block as a single-line string format adding the check section and comment section.
+//
+// Use ToLineWithCheck output and attach the comment section if is available.
+//
+// The string output is the expression more early at the original gcode line used to parse the block
+func (b *Block) ToLineWithCheckAndComments() string {
+	line := b.ToLineWithCheck()
+
+	if b.comment != nil {
+		line = strings.Join([]string{line, *b.comment}, BLOCK_SEPARATOR)
+	}
+
+	return line
+}
+
+// IsChecked calculate the verification and return true or false if matches the check value in the block.
+//
+// Only is calculated if the block has check section. In another case, return an error
 func (b *Block) IsChecked() (bool, error) {
-	checksum, err := check.NewCheck(check.CHECKSUM, b.ToCommand())
+	if b.check == nil {
+		return false, fmt.Errorf("this block hasn't check section")
+	}
+
+	checksum, err := check.NewCheck(check.CHECKSUM, b.ToLine())
 	if err != nil {
 		return false, err
 	}
@@ -103,11 +172,15 @@ func (b *Block) IsChecked() (bool, error) {
 	return checksum.Value() == b.check.Value(), nil
 }
 
+// Parse return a new block instance using the data available in a single gcode line from gcode file
+//
+// Recive a string that must contain a gcode line valid.
+// Try to extract each section from de block line to stores.
+//
+// Return an error if was a problem.
 func Parse(s string) (*Block, error) {
 
 	pblock := prepareSourceToParse(s)
-
-	fmt.Printf("from %v, to %v\n", s, pblock)
 
 	const separator = ' '
 
@@ -123,7 +196,6 @@ loop:
 			break loop
 		}
 		i = strings.IndexRune(pblock, separator)
-		fmt.Printf("\n**********\nindex: %v\n", i)
 
 		if i == 0 {
 			pblock = pblock[1:]
@@ -135,7 +207,6 @@ loop:
 		var paddress string = ""
 
 		if i <= -1 {
-			fmt.Printf("ultimo!!!\n")
 			pgcode = pblock
 			pword = pgcode[0]
 		} else {
@@ -147,25 +218,17 @@ loop:
 			paddress = pgcode[1:]
 		}
 
-		fmt.Printf("pblock(%v): %v\n", len(pblock), pblock)
-		fmt.Printf("pgcode(%v): %v\n", len(pgcode), pgcode)
-		fmt.Printf("pword(%v): %v\n", 1, string(pword))
-		fmt.Printf("paddress(%v): %v\n", len(paddress), paddress)
-		// fmt.Printf("remain(%v): %v\n", len(pblock[i:]), pblock[i:])
-
 		if len(pgcode) > 1 {
-			fmt.Printf("parsing address from %v\n", pgcode[1:])
 			var gca gcode.Gcoder
 			//tiene address
 			//es int?
-			valueInt, err := strconv.ParseInt(pgcode[1:], 10, 32)
+			valueInt, err := strconv.ParseInt(paddress, 10, 32)
 			if err == nil {
 				gca, err = gcode.NewGcodeAddressable(pword, int32(valueInt))
 				if err != nil {
 					return nil, err
 				}
 				gcodes = append(gcodes, gca)
-				fmt.Printf("add int32 ok: %v\n", gca.String())
 				if i <= -1 {
 					break loop
 				}
@@ -174,16 +237,14 @@ loop:
 			}
 
 			//es float?
-			valueFloat, err := strconv.ParseFloat(pgcode[1:], 32)
+			valueFloat, err := strconv.ParseFloat(paddress, 32)
 			if err == nil {
 				gca, err = gcode.NewGcodeAddressable(pword, float32(valueFloat))
 				if err != nil {
 					return nil, err
 				}
 				gcodes = append(gcodes, gca)
-				fmt.Printf("add float32 ok: %v\n", gca.String())
 				if i <= -1 {
-					fmt.Printf("aaaaaaaaaaa\n")
 					break loop
 				}
 				pblock = pblock[i:]
@@ -191,19 +252,17 @@ loop:
 			}
 
 			//asumo string
-			gca, err = gcode.NewGcodeAddressable(pword, pgcode[1:])
+			gca, err = gcode.NewGcodeAddressable(pword, paddress)
 			if err != nil {
 				return nil, err
 			}
 			gcodes = append(gcodes, gca)
-			fmt.Printf("add string ok: %v\n", gca.String())
 			if i <= -1 {
 				break loop
 			}
 			pblock = pblock[i:]
 			continue
 		} else {
-			fmt.Printf("single!\n")
 			gc, err := gcode.NewGcode(pword)
 			if err != nil {
 				return nil, err
@@ -222,36 +281,82 @@ loop:
 	var b *Block
 
 	if len(gcodes) == 1 {
-		b = &Block{
-			lineNumber: nil,
-			command:    gcodes[0],
-			parameters: nil,
-			check:      nil,
-			comment:    nil,
+
+		ww := gcodes[0].Word()
+		if ww.String() == "N" {
+
+			//convert
+			var ln *gcode.GcodeAddressable[int32]
+			var ok bool
+			if ln, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
+				return nil, fmt.Errorf("aline number gcode found, but it was not possible to parse it")
+			}
+
+			b = &Block{
+				lineNumber: ln,
+				command:    nil,
+				parameters: nil,
+				check:      nil,
+				comment:    nil,
+			}
+
+		} else {
+			b = &Block{
+				lineNumber: nil,
+				command:    gcodes[0],
+				parameters: nil,
+				check:      nil,
+				comment:    nil,
+			}
 		}
 	} else {
-		b = &Block{
-			lineNumber: nil,
-			command:    gcodes[0],
-			parameters: gcodes[1:],
-			check:      nil,
-			comment:    nil,
+		ww := gcodes[0].Word()
+		if ww.String() == "N" {
+
+			//convert
+			var ln *gcode.GcodeAddressable[int32]
+			var ok bool
+			if ln, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
+				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it: %v %v", ok, gcodes[0])
+			}
+
+			b = &Block{
+				lineNumber: ln,
+				command:    gcodes[1],
+				parameters: gcodes[2:], //out of index warning
+				check:      nil,
+				comment:    nil,
+			}
+
+		} else {
+			b = &Block{
+				lineNumber: nil,
+				command:    gcodes[0],
+				parameters: gcodes[1:],
+				check:      nil,
+				comment:    nil,
+			}
 		}
 	}
 
 	return b, nil
 }
 
+// removeDuplicateSpaces remove all space char consecutive two or more times
 func removeDuplicateSpaces(s string) string {
 	rx := regexp.MustCompile(`\s{2,}`)
 	return rx.ReplaceAllString(s, " ")
 }
 
+// removeSpecialChars remove all escape characters
 func removeSpecialChars(s string) string {
 	rx := regexp.MustCompile(`[\n\t\r]`)
 	return rx.ReplaceAllString(s, " ")
 }
 
+// prepareSourceToParse modify a string to can be parsed for the Parse function
+//
+// It doesn't verify if s strings is a gcode line valid
 func prepareSourceToParse(s string) string {
 	s = strings.TrimSpace(s)
 	s = strings.ToUpper(s)
