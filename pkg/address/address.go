@@ -11,6 +11,7 @@ package address
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -56,6 +57,13 @@ func (a *AddressStringTooShortError) Error() string {
 }
 
 func (a *Address[T]) String() string {
+	if value, ok := any(a.Value).(float32); ok {
+		sv := strconv.FormatFloat(float64(value), 'f', -1, 32)
+		if !strings.Contains(sv, ".") {
+			sv += ".0"
+		}
+		return sv
+	}
 	return fmt.Sprintf("%v", a.Value)
 }
 

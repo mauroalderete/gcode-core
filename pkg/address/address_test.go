@@ -148,7 +148,7 @@ func ExampleAddress_String_second() {
 
 	fmt.Printf("address value is: %s\n", add.String())
 
-	// Output: address value is: 12
+	// Output: address value is: 12.0
 }
 
 func TestNewAddress(t *testing.T) {
