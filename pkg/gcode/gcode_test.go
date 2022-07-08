@@ -273,7 +273,8 @@ func ExampleGcodeAddressable_Address() {
 		return
 	}
 
-	fmt.Println(gc.Address().String())
+	var a address.Address[int32] = gc.Address()
+	fmt.Println(a.String())
 
 	// Output: 66555
 }
@@ -293,7 +294,8 @@ func ExampleGcodeAddressable_Address_second() {
 	}
 
 	if value, ok := gc.(*gcode.GcodeAddressable[int32]); ok {
-		fmt.Printf("the int32 address recovered is %v\n", value.Address().String())
+		add := value.Address()
+		fmt.Printf("the int32 address recovered is %v\n", add.String())
 	}
 
 	// Output: the int32 address recovered is 66555
