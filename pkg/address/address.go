@@ -1,117 +1,119 @@
+// address package allows store and management the representation of the part assigned to the value of a gcode.
+//
+// A gcode can have or doesn't have an address. When it has, the address can be of the int32, float32 or string data type.
+//
+// This package contains a constructor that returns an address of some of these data types defined by the AddressType interface.
+//
+// An address struct is bound with a series of methods and functions that allow you to operate with the value of the address.
+//
+// At the same time, this package defines some error interfaces to handle the incidences that occur during the construction.
 package address
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-type Address struct {
-	value string
-}
-
+// AddressType interface defines the restriction type used as type generic to Address model
 type AddressType interface {
 	string | int32 | float32
 }
 
-func (a *Address) String() string {
-	return a.value
+// Address[T AddressType] struct model a address of a gcode.
+//
+// An address can to be the int32, float32, string data type. It is defined by the restriction with AddressType interface.
+//
+// Expose a Value field that stores the useful data.
+type Address[T AddressType] struct {
+	Value T
 }
 
-func (a *Address) ToInteger() (int, error) {
-	return toInteger(a.value)
+// AddressStringContainInvalidCharsError struct model an error that happens when a potential address value of the string data type contains chars doesn't allowed
+type AddressStringContainInvalidCharsError struct {
+	Value string
 }
 
-func (a *Address) ToFloat() (float32, error) {
-	return toFloat(a.value)
+func (a *AddressStringContainInvalidCharsError) Error() string {
+	return fmt.Errorf("gcode's address string contain invalid chars: %v", a.Value).Error()
 }
 
-func (a *Address) IsInteger() bool {
-	_, err := a.ToInteger()
-
-	return err == nil
+// AddressStringQuoteError struct model an error that happens when a potential address value of the string data type contains chars doesn't allowed
+type AddressStringQuoteError struct {
+	Value string
 }
 
-func (a *Address) IsFloat() bool {
-	_, err := a.ToFloat()
-	return err == nil
+func (a *AddressStringQuoteError) Error() string {
+	return fmt.Errorf("gcode's address string has an invalid use of the quotes: %v", a.Value).Error()
 }
 
-func (a *Address) IsNumber() bool {
-
-	return a.IsInteger() || a.IsFloat()
+// AddressStringTooShortError struct model an error that happens when a potential address value of the string data type is too short to be a valid data
+type AddressStringTooShortError struct {
+	Value string
 }
 
-func (a *Address) Compare(address fmt.Stringer) bool {
-	return a.value == address.String()
+func (a *AddressStringTooShortError) Error() string {
+	return fmt.Errorf("gcode's address string is too short: %v", a.Value).Error()
 }
 
-func NewAddress[T AddressType](address T) (*Address, error) {
-
-	var addressValue string
-
-	switch a := any(&address).(type) {
-	case *string:
-		{
-			addressValue = *a
+func (a *Address[T]) String() string {
+	if value, ok := any(a.Value).(float32); ok {
+		sv := strconv.FormatFloat(float64(value), 'f', -1, 32)
+		if !strings.Contains(sv, ".") {
+			sv += ".0"
 		}
-	case *int32:
-		{
-			addressValue = strconv.FormatInt(int64(*a), 10)
-		}
-	case *float32:
-		{
-			addressValue = strconv.FormatFloat(float64(*a), 'f', -1, 32)
-		}
-	default:
-		{
-			return nil, errors.New("address is invalid type")
+		return sv
+	}
+	return fmt.Sprintf("%v", a.Value)
+}
+
+// Compare allow knowing if an address is equal to the other address object
+func (add *Address[T]) Compare(a Address[T]) bool {
+	return add.Value == a.Value
+}
+
+// NewAddress[T AddressType] return a pointer to a new instance of an address struct.
+//
+// Return an error when the value does not correspond to a format valid
+func NewAddress[T AddressType](value T) (*Address[T], error) {
+
+	if value, ok := any(value).(string); ok {
+		err := IsAddressStringValid(value)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	err := isValid(addressValue)
-	if err != nil {
-		return nil, err
-	}
-
-	newAddress := Address{
-		value: addressValue,
+	newAddress := Address[T]{
+		Value: value,
 	}
 
 	return &newAddress, nil
 }
 
-func isValid(address string) error {
-
-	if strings.ContainsAny(address, "\t\n\r") {
-		return errors.New("gcode's address contain invalid chars")
+// IsAddressStringValid allow knowing if a string input can be an address value of string data type valid.
+//
+// Return an of the error types defined in this package if s string is invalid.
+//
+// Return nil if s string satisfies the format of address value of string data type.
+func IsAddressStringValid(s string) error {
+	if len(s) <= 1 {
+		return &AddressStringTooShortError{Value: s}
 	}
 
-	_, err := toInteger(address)
-	_, err1 := toFloat(address)
-
-	if err == nil || err1 == nil {
-		return nil
+	if strings.ContainsAny(s, "\t\n\r") {
+		return &AddressStringContainInvalidCharsError{Value: s}
 	}
 
-	if len(address) == 1 {
-		return fmt.Errorf("when a gcode's address isn't a numeric value, it must contain a string close in between double quotes, %s", address)
+	if !(s[0] == '"' && s[len(s)-1] == '"') {
+		return &AddressStringQuoteError{}
 	}
 
-	if address[0:1] != "\"" && address[len(address)-1:] != "\"" {
-		return fmt.Errorf("gcode's address value could not be regconocide like integer, float number or string, %s", address)
+	for _, v := range strings.Split(s[1:len(s)-1], "\"\"") {
+		if strings.ContainsRune(v, '"') {
+			return &AddressStringQuoteError{}
+		}
 	}
 
 	return nil
-}
-
-func toInteger(value string) (int, error) {
-	value64, err := strconv.ParseInt(value, 10, 32)
-	return int(value64), err
-}
-
-func toFloat(value string) (float32, error) {
-	value64, err := strconv.ParseFloat(value, 32)
-	return float32(value64), err
 }

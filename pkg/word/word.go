@@ -32,6 +32,12 @@ func (w *Word) String() string {
 }
 
 // Value return the word value like a byte data type
+//
+// This field is immutable.
+//
+// Any change on the value field implies that the gcode involved will become a new gcode totally different, with another significate.
+//
+// When you need to change the gcode, you can instantiate another new gcode with the word and address that you require.
 func (w *Word) Value() byte {
 	return w.value
 }
