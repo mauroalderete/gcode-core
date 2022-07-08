@@ -238,6 +238,21 @@ func ExampleGcode_String_second() {
 	// Output: X"Hola mundo!"
 }
 
+func ExampleGcode_String_third() {
+
+	gca, err := gcode.NewGcodeAddressable('X', "\"Hola mundo!\"")
+	if err != nil {
+		_ = fmt.Errorf("%s", err.Error())
+		return
+	}
+
+	var gc gcode.Gcoder = gca
+
+	fmt.Println(gc)
+
+	// Output: X"Hola mundo!"
+}
+
 func ExampleGcode_Word() {
 	gc, err := gcode.NewGcode('D')
 	if err != nil {
