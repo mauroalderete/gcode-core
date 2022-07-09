@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 09/07/2022
+
+Implement the opaque errors strategy.
+
 # 08/07/2022
 
 ## Feature
