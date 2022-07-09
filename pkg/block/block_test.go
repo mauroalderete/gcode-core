@@ -7,6 +7,8 @@ import (
 	block "github.com/mauroalderete/gcode-skew-transform-cli/pkg/block"
 )
 
+//#region unit tests
+
 func TestParse(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		var cases = [1]struct {
@@ -33,6 +35,9 @@ func TestParse(t *testing.T) {
 		}
 	})
 }
+
+//#endregion
+//#region examples
 
 func ExampleParse() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
@@ -224,3 +229,5 @@ func ExampleBlock_ToLineWithCheckAndComments() {
 
 	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
 }
+
+//#endregion

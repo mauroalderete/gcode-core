@@ -1,7 +1,7 @@
 package check
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/check/checksum"
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
@@ -25,7 +25,7 @@ func NewCheck(kind CheckKind, data string) (Checker, error) {
 		{
 			ret, err := checksum.NewChecksum(data)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to create a Checker instance of Cheksum type with string %s: %w", data, err)
 			}
 			c := Checker(ret)
 			return c, nil
@@ -35,5 +35,5 @@ func NewCheck(kind CheckKind, data string) (Checker, error) {
 		}
 	}
 
-	return nil, errors.New("kind's check is not valid")
+	return nil, fmt.Errorf("failed to create a Checker instance, kind's check %v is not valid", kind)
 }
