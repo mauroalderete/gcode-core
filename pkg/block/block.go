@@ -36,6 +36,8 @@ const (
 	BLOCK_SEPARATOR = " "
 )
 
+//#region block struct
+
 // Block struct represents a single gcode block.
 //
 // Stores data and gcode expressions of each section of the block.
@@ -166,11 +168,14 @@ func (b *Block) IsChecked() (bool, error) {
 
 	checksum, err := check.NewCheck(check.CHECKSUM, b.ToLine())
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to calculate checksum value: %w", err)
 	}
 
 	return checksum.Value() == b.check.Value(), nil
 }
+
+//#endregion
+//#region package functions
 
 // Parse return a new block instance using the data available in a single gcode line from gcode file
 //
@@ -289,7 +294,7 @@ loop:
 			var ln *gcode.GcodeAddressable[int32]
 			var ok bool
 			if ln, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
-				return nil, fmt.Errorf("aline number gcode found, but it was not possible to parse it")
+				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it")
 			}
 
 			b = &Block{
@@ -342,6 +347,9 @@ loop:
 	return b, nil
 }
 
+//#endregion
+//#region private functions
+
 // removeDuplicateSpaces remove all space char consecutive two or more times
 func removeDuplicateSpaces(s string) string {
 	rx := regexp.MustCompile(`\s{2,}`)
@@ -365,3 +373,5 @@ func prepareSourceToParse(s string) string {
 
 	return s
 }
+
+//#endregion

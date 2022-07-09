@@ -1,12 +1,10 @@
 // address package allows store and management the representation of the part assigned to the value of a gcode.
 //
-// A gcode can have or doesn't have an address. When it has, the address can be of the int32, float32 or string data type.
+// A gcode can have or doesn't have an address. When it has, the address must be of either int32, float32 or string data type.
 //
 // This package contains a constructor that returns an address of some of these data types defined by the AddressType interface.
 //
 // An address struct is bound with a series of methods and functions that allow you to operate with the value of the address.
-//
-// At the same time, this package defines some error interfaces to handle the incidences that occur during the construction.
 package address
 
 import (
@@ -14,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 )
+
+//#region address struct
 
 // AddressType interface defines the restriction type used as type generic to Address model
 type AddressType interface {
@@ -27,33 +27,6 @@ type AddressType interface {
 // Expose a Value field that stores the useful data.
 type Address[T AddressType] struct {
 	Value T
-}
-
-// AddressStringContainInvalidCharsError struct model an error that happens when a potential address value of the string data type contains chars doesn't allowed
-type AddressStringContainInvalidCharsError struct {
-	Value string
-}
-
-func (a *AddressStringContainInvalidCharsError) Error() string {
-	return fmt.Errorf("gcode's address string contain invalid chars: %v", a.Value).Error()
-}
-
-// AddressStringQuoteError struct model an error that happens when a potential address value of the string data type contains chars doesn't allowed
-type AddressStringQuoteError struct {
-	Value string
-}
-
-func (a *AddressStringQuoteError) Error() string {
-	return fmt.Errorf("gcode's address string has an invalid use of the quotes: %v", a.Value).Error()
-}
-
-// AddressStringTooShortError struct model an error that happens when a potential address value of the string data type is too short to be a valid data
-type AddressStringTooShortError struct {
-	Value string
-}
-
-func (a *AddressStringTooShortError) Error() string {
-	return fmt.Errorf("gcode's address string is too short: %v", a.Value).Error()
 }
 
 func (a *Address[T]) String() string {
@@ -72,6 +45,9 @@ func (add *Address[T]) Compare(a Address[T]) bool {
 	return add.Value == a.Value
 }
 
+//#endregion
+//#region constructors
+
 // NewAddress[T AddressType] return a pointer to a new instance of an address struct.
 //
 // Return an error when the value does not correspond to a format valid
@@ -80,40 +56,43 @@ func NewAddress[T AddressType](value T) (*Address[T], error) {
 	if value, ok := any(value).(string); ok {
 		err := IsAddressStringValid(value)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to create an address instance using the value %v: %w", value, err)
 		}
 	}
 
-	newAddress := Address[T]{
+	return &Address[T]{
 		Value: value,
-	}
-
-	return &newAddress, nil
+	}, nil
 }
+
+//#endregion
+//#region package functions
 
 // IsAddressStringValid allow knowing if a string input can be an address value of string data type valid.
 //
-// Return an of the error types defined in this package if s string is invalid.
+// Return an error if s string is invalid.
 //
 // Return nil if s string satisfies the format of address value of string data type.
 func IsAddressStringValid(s string) error {
 	if len(s) <= 1 {
-		return &AddressStringTooShortError{Value: s}
+		return fmt.Errorf("gcode address string is too short: %v", s)
 	}
 
 	if strings.ContainsAny(s, "\t\n\r") {
-		return &AddressStringContainInvalidCharsError{Value: s}
+		return fmt.Errorf("gcode address string contains invalid chars: %v", s)
 	}
 
 	if !(s[0] == '"' && s[len(s)-1] == '"') {
-		return &AddressStringQuoteError{}
+		return fmt.Errorf("gcode address string isn't enclosed in quotes: %v", s)
 	}
 
 	for _, v := range strings.Split(s[1:len(s)-1], "\"\"") {
 		if strings.ContainsRune(v, '"') {
-			return &AddressStringQuoteError{}
+			return fmt.Errorf("gcode address string hasn't a valid use of the quotes: %v", s)
 		}
 	}
 
 	return nil
 }
+
+//#endregion

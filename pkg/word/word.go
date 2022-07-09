@@ -11,59 +11,59 @@ import (
 	"fmt"
 )
 
-// Word struct implement a word of a gcode
+//#region word struct
+
+// Word struct implement a word of a gcode.
 //
-// Allow store a letter that mean the value of word.
+// It allows the storing of a letter that represent the value of word.
 type Word struct {
 	value byte
 }
 
-type WordInvalidValueError struct {
-	Value byte
-}
-
-func (e *WordInvalidValueError) Error() string {
-	return fmt.Errorf("gcode's word has invalid value: %s", string(e.Value)).Error()
-}
-
-// String return the word value like string data type
+// String return the word value like string data type.
 func (w *Word) String() string {
 	return string(w.value)
 }
 
-// Value return the word value like a byte data type
+// Value return the word value like a byte data type.
 //
 // This field is immutable.
 //
 // Any change on the value field implies that the gcode involved will become a new gcode totally different, with another significate.
 //
-// When you need to change the gcode, you can instantiate another new gcode with the word and address that you require.
+// When you need to change the gcode, you can instantiate another new gcode with the new word and the new address that you require.
 func (w *Word) Value() byte {
 	return w.value
 }
 
-// NewWord is a constructor to instance a word struct
+//#endregion
+
+//#region constructors
+
+// NewWord is a constructor to instance a word struct.
 //
-// Receive a byte that represents the word within the gcode command.
+// Receive a byte that represents the word in the gcode command.
 // If the value is a word valid then will return a pointer a new word struct.
-// Else, will return a error message.
+// Else, it will return an error.
 func NewWord(word byte) (*Word, error) {
 
 	err := isValid(word)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed the construction of a new word with the value %v: %w", word, err)
 	}
 
-	newWord := Word{
+	return &Word{
 		value: word,
-	}
-
-	return &newWord, nil
+	}, nil
 }
 
-// isValid allow knowledge if a potential word value contains a value valid according to a specification gcode
+//#endregion
+
+//#region private functions
+
+// isValid allow knowledge if a potential word value contains a value valid according to a specification gcode.
 //
-// The valid values are hard coding and they correspond to a [ReRap documentation]
+// The set valid values are hard coding and they correspond to a [ReRap documentation].
 //
 // [ReRap documentation]: https://reprap.org/wiki/G-code
 func isValid(word byte) error {
@@ -73,5 +73,7 @@ func isValid(word byte) error {
 		return nil
 	}
 
-	return &WordInvalidValueError{Value: word}
+	return fmt.Errorf("gcode's word has invalid value: %v", word)
 }
+
+//#endregion

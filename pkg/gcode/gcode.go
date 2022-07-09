@@ -4,21 +4,28 @@
 //
 // A gcode can be interpreted as a command, parameter, or for any other special purpose.
 //
-// It consists of only a stand-alone letter, named word. Or the word directly followed by a numeric or alphanumeric value named address. The word gives information about the meaning of the gcode. Instead, the address asserts a value to gcode. It can be integers (128) or fractional numbers (12.42) or strings depending on the context.
+// It consists of only a stand-alone letter, named word.
+// Or the word directly followed by a numeric or alphanumeric value named address.
+// The word gives information about the meaning of the gcode.
+// Instead, the address asserts a value to gcode.
+// It can be integers (128) or fractional numbers (12.42) or strings depending on the context.
 //
 // For example, an X coordinate can take integers (X175) or fractionals (X17.62).
 //
 // gcode package implements two constructor methods to instantiate a Gcode struct or a GcodeAddressable struct.
 //
-// One of them is used to model a gcode with a stand-alone word. Is said, allows to get a gcode without an address component.
+// One of them is used to model a gcode with a stand-alone word.
+// Is said, allows to get a gcode without an address component.
 //
-// The other method is a generic method that allows constructing a typical gcode object but, also, includes an address struct of the data type defined by the AddressType interface in the address package. This constructor we allow to get a gcode with a string address, or address int32 or address float32.
+// The other method is a generic method that allows constructing a typical gcode object but, also,
+// includes an address struct of the data type defined by the AddressType interface in the address package.
+// This constructor we allow to get a gcode with a string address, or address int32 or address float32.
 //
-// All gcode types implement a Gcoder interface. Instead, the gcodes that contain an address implement the GcodeAddresser interface.
+// All gcode types implement a Gcoder interface.
+// Instead, the gcodes that contain an address implement the GcodeAddresser interface.
 //
-// GcodeAddresser interface wrap Gcoder interface. This means, that all the GcodeAddresser objects are as well Gcoder objects.
-//
-// This package does not contain artefacts to handle its own errors, instead, reuses the errors emitted by address and word packages.
+// GcodeAddresser interface wrap Gcoder interface.
+// This means, that all the GcodeAddresser objects are as well Gcoder objects.
 package gcode
 
 import (
@@ -27,6 +34,8 @@ import (
 	gcode_address "github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 	gcode_word "github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
+
+//#region gcode struct
 
 // Gcoder interface allows getting the word that gives meaning to the gcode and knowing if includes an address or not
 type Gcoder interface {
@@ -54,12 +63,18 @@ func (g *Gcode) Word() gcode_word.Word {
 
 // HasAddress indicate if the gcode contains or not an address.
 //
-// If a gcode contains an address, this gcode can be referenced using the GcodeAddresser interface with reflection.
+// This method is executed when to be called from a Gcode instance or a Gcoder instance that contains a reference to a Gcode object.
+// In both cases, it always returns false.
 func (g *Gcode) HasAddress() bool {
 	return false
 }
 
-// GcodeAddresser interface define a gcode entity that include an address entity
+//#endregion
+//#region gcode addressable struct
+
+// GcodeAddresser interface define a gcode entity that include an address entity.
+//
+// A GcodeAddresser[T] object expose an address object of type [T].
 type GcodeAddresser[T gcode_address.AddressType] interface {
 	Gcoder
 	Address() gcode_address.Address[T]
@@ -73,7 +88,7 @@ type GcodeAddressable[T gcode_address.AddressType] struct {
 	address gcode_address.Address[T]
 }
 
-// String return G-code formatted
+// String return gcode formatted
 func (g *GcodeAddressable[T]) String() string {
 	return fmt.Sprintf("%s%s", g.word.String(), g.address.String())
 }
@@ -85,7 +100,8 @@ func (g *GcodeAddressable[T]) Word() gcode_word.Word {
 
 // HasAddress indicate if the gcode contain or not an address.
 //
-// Always return true
+// This method is called from a GcodeAddressable instance or a GcodeAddresser instance that contains a reference to a GcodeAddressable object.
+// Always return true.
 func (g *GcodeAddressable[T]) HasAddress() bool {
 	return true
 }
@@ -94,6 +110,9 @@ func (g *GcodeAddressable[T]) HasAddress() bool {
 func (g *GcodeAddressable[T]) Address() gcode_address.Address[T] {
 	return g.address
 }
+
+//#endregion
+//#region constructors
 
 // NewGcode is the constructor to instance a Gcode struct.
 //
@@ -105,7 +124,7 @@ func NewGcode(word byte) (Gcoder, error) {
 	// Try instace Word struct
 	wrd, err := gcode_word.NewWord(word)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create an gcode instance when trying to use %v word: %w", word, err)
 	}
 
 	return &Gcode{
@@ -125,13 +144,13 @@ func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (Gco
 	// Try instace Word struct
 	wrd, err := gcode_word.NewWord(word)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create an addressable gcode instance of type %T when trying to use %v word: %w", address, word, err)
 	}
 
 	// Try instace Address struct
 	add, err := gcode_address.NewAddress(address)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create an addressable gcode instance of type %T when trying to use %v address: %w", address, address, err)
 	}
 
 	return &GcodeAddressable[T]{
@@ -141,3 +160,5 @@ func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (Gco
 		address: *add,
 	}, nil
 }
+
+//#endregion
