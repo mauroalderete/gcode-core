@@ -22,27 +22,56 @@ type AddressType interface {
 
 // Address[T AddressType] struct model a address of a gcode.
 //
-// An address can to be the int32, float32, string data type. It is defined by the restriction with AddressType interface.
+// An address can to be the int32, float32, string data type.
+// It is defined by the restriction with AddressType interface.
 //
 // Expose a Value field that stores the useful data.
 type Address[T AddressType] struct {
-	Value T
+	value T
 }
 
+// Value return the value of the address
+func (a *Address[T]) Value() T {
+	return a.value
+}
+
+// SetValue allow to store a new value
+//
+// If the address data type is string then the new value is verified.
+// If it doesn't satisfy the a string format then SetValue returns an error.
+func (a *Address[T]) SetValue(value T) error {
+
+	if ok, err := isGenericValueAnStringAddressValid(value); ok {
+		if err != nil {
+			return fmt.Errorf("failed set the value %v at the %T address: %w", value, value, err)
+		}
+	}
+
+	a.value = value
+
+	return nil
+}
+
+// String return the value in address as string format
+//
+// If the address data type is a float32 then the format returned will contain at least one decimal,
+// regardless of whether the value corresponds to an integer.
+//
+// For example, for the float32 value 13, the string returned will be "13.0".
 func (a *Address[T]) String() string {
-	if value, ok := any(a.Value).(float32); ok {
-		sv := strconv.FormatFloat(float64(value), 'f', -1, 32)
+	if float32Value, ok := any(a.Value()).(float32); ok {
+		sv := strconv.FormatFloat(float64(float32Value), 'f', -1, 32)
 		if !strings.Contains(sv, ".") {
 			sv += ".0"
 		}
 		return sv
 	}
-	return fmt.Sprintf("%v", a.Value)
+	return fmt.Sprintf("%v", a.Value())
 }
 
 // Compare allow knowing if an address is equal to the other address object
-func (add *Address[T]) Compare(a Address[T]) bool {
-	return add.Value == a.Value
+func (a *Address[T]) Compare(address Address[T]) bool {
+	return a.Value() == address.value
 }
 
 //#endregion
@@ -53,15 +82,14 @@ func (add *Address[T]) Compare(a Address[T]) bool {
 // Return an error when the value does not correspond to a format valid
 func NewAddress[T AddressType](value T) (*Address[T], error) {
 
-	if value, ok := any(value).(string); ok {
-		err := IsAddressStringValid(value)
+	if ok, err := isGenericValueAnStringAddressValid(value); ok {
 		if err != nil {
-			return nil, fmt.Errorf("failed to create an address instance using the value %v: %w", value, err)
+			return nil, fmt.Errorf("failed to create an string address instance using the expression %v: %w", value, err)
 		}
 	}
 
 	return &Address[T]{
-		Value: value,
+		value: value,
 	}, nil
 }
 
@@ -93,6 +121,27 @@ func IsAddressStringValid(s string) error {
 	}
 
 	return nil
+}
+
+//#endregion
+
+//#region private functions
+
+// isGenericValueAnStringAddressValid return true if the value is an string and return error if this string value is not string address valid.
+//
+// It returns false if the value is not of the string data type.
+// In this case, it does not be to verify any string, therefore never it returns an error.
+func isGenericValueAnStringAddressValid[T AddressType](value T) (bool, error) {
+	if stringValue, ok := any(value).(string); ok {
+		err := IsAddressStringValid(stringValue)
+		if err != nil {
+			return true, err
+		}
+
+		return true, nil
+	}
+
+	return false, nil
 }
 
 //#endregion
