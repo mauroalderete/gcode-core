@@ -9,6 +9,8 @@ import (
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
 
+//region unit tests
+
 func TestNewGcode(t *testing.T) {
 	t.Run("valids", func(t *testing.T) {
 
@@ -43,18 +45,20 @@ func TestNewGcode(t *testing.T) {
 		t.Run("word", func(t *testing.T) {
 			cases := []struct {
 				word byte
-				err  error
 			}{
-				{'+', &word.WordInvalidValueError{Value: '+'}},
-				{'\t', &word.WordInvalidValueError{Value: '\t'}},
-				{'"', &word.WordInvalidValueError{Value: '"'}},
+				{'+'},
+				{'\t'},
+				{'"'},
 			}
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					_, err := gcode.NewGcode(c.word)
-					if err.Error() != c.err.Error() {
-						t.Errorf("got %v, want %v", err, c.err)
+					gc, err := gcode.NewGcode(c.word)
+					if err == nil {
+						t.Errorf("got nil error, want not nil error")
+					}
+					if gc != nil {
+						t.Errorf("got %v gcode, want nil gcode", gc)
 					}
 				})
 			}
@@ -105,18 +109,20 @@ func TestNewGcodeAddressable(t *testing.T) {
 			cases := []struct {
 				word    byte
 				address int32
-				err     error
 			}{
-				{'+', 2, &word.WordInvalidValueError{Value: '+'}},
-				{'\t', 2, &word.WordInvalidValueError{Value: '\t'}},
-				{'"', 2, &word.WordInvalidValueError{Value: '"'}},
+				{'+', 2},
+				{'\t', 2},
+				{'"', 2},
 			}
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					_, err := gcode.NewGcodeAddressable(c.word, c.address)
-					if err.Error() != c.err.Error() {
-						t.Errorf("got %v, want %v", err, c.err)
+					gc, err := gcode.NewGcodeAddressable(c.word, c.address)
+					if err == nil {
+						t.Errorf("got nil error, want not nil error")
+					}
+					if gc != nil {
+						t.Errorf("got %v gcode, want nil gcode", gc)
 					}
 				})
 			}
@@ -126,24 +132,29 @@ func TestNewGcodeAddressable(t *testing.T) {
 			cases := []struct {
 				word    byte
 				address string
-				err     error
 			}{
-				{'X', "", &address.AddressStringTooShortError{Value: ""}},
-				{'X', "\"\t\"", &address.AddressStringContainInvalidCharsError{Value: "\"\t\""}},
-				{'X', "\"\"\"", &address.AddressStringQuoteError{Value: ""}},
+				{'X', ""},
+				{'X', "\"\t\""},
+				{'X', "\"\"\""},
 			}
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					_, err := gcode.NewGcodeAddressable(c.word, c.address)
-					if err.Error() != c.err.Error() {
-						t.Errorf("got %v, want %v", err, c.err)
+					gc, err := gcode.NewGcodeAddressable(c.word, c.address)
+					if err == nil {
+						t.Errorf("got nil error, want not nil error")
+					}
+					if gc != nil {
+						t.Errorf("got %v gcode, want nil gcode", gc)
 					}
 				})
 			}
 		})
 	})
 }
+
+//#endregion
+//#region examples
 
 func ExampleNewGcode() {
 
@@ -315,3 +326,5 @@ func ExampleGcodeAddressable_Address_second() {
 
 	// Output: the int32 address recovered is 66555
 }
+
+//#endregion
