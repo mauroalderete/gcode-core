@@ -21,7 +21,7 @@ type Word struct {
 }
 
 // String return the word value like string data type.
-func (w *Word) String() string {
+func (w Word) String() string {
 	return string(w.value)
 }
 
@@ -32,7 +32,7 @@ func (w *Word) String() string {
 // Any change on the value field implies that the gcode involved will become a new gcode totally different, with another significate.
 //
 // When you need to change the gcode, you can instantiate another new gcode with the new word and the new address that you require.
-func (w *Word) Value() byte {
+func (w Word) Value() byte {
 	return w.value
 }
 

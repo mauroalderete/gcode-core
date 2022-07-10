@@ -6,7 +6,6 @@ import (
 
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
 
 //region unit tests
@@ -330,9 +329,7 @@ func ExampleGcode_Word() {
 		return
 	}
 
-	var w word.Word = gc.Word()
-
-	fmt.Println(w.String())
+	fmt.Println(gc.Word().String())
 
 	// Output: D
 }
@@ -344,9 +341,7 @@ func ExampleGcode_Word_second() {
 		return
 	}
 
-	var w word.Word = gca.Word()
-
-	fmt.Println(w.String())
+	fmt.Println(gca.Word().String())
 
 	// Output: D
 }
