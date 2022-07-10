@@ -77,7 +77,7 @@ func (g *Gcode) HasAddress() bool {
 // A GcodeAddresser[T] object expose an address object of type [T].
 type GcodeAddresser[T gcode_address.AddressType] interface {
 	Gcoder
-	Address() gcode_address.Address[T]
+	Address() *gcode_address.Address[T]
 }
 
 // GcodeAddressable struct that implements GcodeAddresser interface
@@ -85,7 +85,7 @@ type GcodeAddresser[T gcode_address.AddressType] interface {
 // Is composed of a gcode struct and includes an address field to store an address instance
 type GcodeAddressable[T gcode_address.AddressType] struct {
 	Gcode
-	address gcode_address.Address[T]
+	address *gcode_address.Address[T]
 }
 
 // String return gcode formatted
@@ -107,7 +107,7 @@ func (g *GcodeAddressable[T]) HasAddress() bool {
 }
 
 // Address return the Address struct that is contained in the Gcode.
-func (g *GcodeAddressable[T]) Address() gcode_address.Address[T] {
+func (g *GcodeAddressable[T]) Address() *gcode_address.Address[T] {
 	return g.address
 }
 
@@ -157,7 +157,7 @@ func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (Gco
 		Gcode: Gcode{
 			word: *wrd,
 		},
-		address: *add,
+		address: add,
 	}, nil
 }
 

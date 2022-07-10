@@ -163,7 +163,7 @@ func TestAddressSetValuePersistenceOnGcodeAddressable(t *testing.T) {
 			t.Errorf("got gcode: nil, want gcode: not nil")
 		}
 
-		var add address.Address[int32]
+		var add *address.Address[int32]
 		add = gc.Address()
 		err = add.SetValue(12)
 		if err != nil {
@@ -181,6 +181,34 @@ func TestAddressSetValuePersistenceOnGcodeAddressable(t *testing.T) {
 			t.Errorf("got address: %v, want address: 120", add.Value())
 		}
 
+	})
+}
+
+func TestAddressInmutableOnGcodeAddressable(t *testing.T) {
+	t.Run("caso 1", func(t *testing.T) {
+		gc, err := gcode.NewGcodeAddressable[int32]('X', 100)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+		if gc == nil {
+			t.Errorf("got gcode: nil, want gcode: not nil")
+		}
+
+		add, err := address.NewAddress[int32](101)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+		if add == nil {
+			t.Errorf("got address: nil, want address: not nil")
+		}
+
+		addFromGcode := gc.Address()
+		addFromGcode = add
+		addFromGcode = gc.Address()
+
+		if addFromGcode.Value() == 101 {
+			t.Errorf("got address: %v, want address: 100", addFromGcode.Value())
+		}
 	})
 }
 
@@ -330,8 +358,7 @@ func ExampleGcodeAddressable_Address() {
 		return
 	}
 
-	var a address.Address[int32] = gc.Address()
-	fmt.Println(a.String())
+	fmt.Println(gc.Address().String())
 
 	// Output: 66555
 }
