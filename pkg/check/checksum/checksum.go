@@ -38,7 +38,7 @@ func NewChecksum(source string) (*Checksum, error) {
 		return nil, fmt.Errorf("checksum constructor failed to generate a checksum valid %v from source %v: %w", checksum, source, err)
 	}
 
-	gcode, err := gcode.NewGcodeAddressable(CHECKSUM_WORD, address.Value)
+	gcode, err := gcode.NewGcodeAddressable(CHECKSUM_WORD, address.Value())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a Checksum instance from source %v: %w", source, err)
 	}
