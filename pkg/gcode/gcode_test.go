@@ -6,7 +6,6 @@ import (
 
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
 
 //region unit tests
@@ -153,6 +152,65 @@ func TestNewGcodeAddressable(t *testing.T) {
 	})
 }
 
+func TestAddressSetValuePersistenceOnGcodeAddressable(t *testing.T) {
+	t.Run("caso 1", func(t *testing.T) {
+		gc, err := gcode.NewGcodeAddressable[int32]('X', 99)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+		if gc == nil {
+			t.Errorf("got gcode: nil, want gcode: not nil")
+		}
+
+		var add *address.Address[int32]
+		add = gc.Address()
+		err = add.SetValue(12)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+
+		add = gc.Address()
+		err = add.SetValue(120)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+
+		add = gc.Address()
+		if add.Value() != 120 {
+			t.Errorf("got address: %v, want address: 120", add.Value())
+		}
+
+	})
+}
+
+func TestAddressInmutableOnGcodeAddressable(t *testing.T) {
+	t.Run("caso 1", func(t *testing.T) {
+		gc, err := gcode.NewGcodeAddressable[int32]('X', 100)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+		if gc == nil {
+			t.Errorf("got gcode: nil, want gcode: not nil")
+		}
+
+		add, err := address.NewAddress[int32](101)
+		if err != nil {
+			t.Errorf("got error: %v, want error: nil", err)
+		}
+		if add == nil {
+			t.Errorf("got address: nil, want address: not nil")
+		}
+
+		addFromGcode := gc.Address()
+		addFromGcode = add
+		addFromGcode = gc.Address()
+
+		if addFromGcode.Value() == 101 {
+			t.Errorf("got address: %v, want address: 100", addFromGcode.Value())
+		}
+	})
+}
+
 //#endregion
 //#region examples
 
@@ -271,9 +329,7 @@ func ExampleGcode_Word() {
 		return
 	}
 
-	var w word.Word = gc.Word()
-
-	fmt.Println(w.String())
+	fmt.Println(gc.Word().String())
 
 	// Output: D
 }
@@ -285,9 +341,7 @@ func ExampleGcode_Word_second() {
 		return
 	}
 
-	var w word.Word = gca.Word()
-
-	fmt.Println(w.String())
+	fmt.Println(gca.Word().String())
 
 	// Output: D
 }
@@ -299,8 +353,7 @@ func ExampleGcodeAddressable_Address() {
 		return
 	}
 
-	var a address.Address[int32] = gc.Address()
-	fmt.Println(a.String())
+	fmt.Println(gc.Address().String())
 
 	// Output: 66555
 }

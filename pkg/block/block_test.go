@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	block "github.com/mauroalderete/gcode-skew-transform-cli/pkg/block"
+	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
 //#region unit tests
@@ -30,6 +31,46 @@ func TestParse(t *testing.T) {
 				}
 				if b.ToLineWithCheckAndComments() != c.source {
 					t.Errorf("got %v, want %v", b.ToLineWithCheckAndComments(), c.source)
+				}
+			})
+		}
+	})
+}
+
+func TestBlockFields(t *testing.T) {
+	var cases = [1]struct {
+		source string
+	}{
+		{"N7 G1 X2.0 Y2.0 F3000.0"}, //*85
+	}
+
+	t.Run("command", func(t *testing.T) {
+		for i, c := range cases {
+			t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
+				b, err := block.Parse(c.source)
+				if err != nil {
+					t.Errorf("got %v, want nil error", err)
+					return
+				}
+				if b == nil {
+					t.Errorf("got nil block, want %v", c.source)
+					return
+				}
+
+				if b.Command() == nil {
+					t.Errorf("got command: nil, want command: not nil")
+					return
+				}
+
+				if b.Command().HasAddress() {
+					if bca, ok := b.Command().(*gcode.GcodeAddressable[int32]); ok {
+						jj := bca.Address().Value()
+						bca.Address().SetValue(jj + 10)
+					}
+				}
+
+				if b.Command().String() != "G11" {
+					t.Errorf("got command: %v, want command: G11", b.Command().String())
 				}
 			})
 		}
@@ -100,14 +141,9 @@ func ExampleBlock_Comment() {
 		return
 	}
 
-	if b.Comment() == nil {
-		fmt.Println("comment isn't available")
-		return
-	}
+	fmt.Printf("comment len is: %d\n", len(b.Comment()))
 
-	fmt.Printf("comment is: %s\n", *b.Comment())
-
-	// Output: comment isn't available
+	// Output: comment len is: 0
 }
 
 func ExampleBlock_IsChecked() {
@@ -145,7 +181,7 @@ func ExampleBlock_LineNumber() {
 		return
 	}
 
-	fmt.Printf("line number is: %v\n", b.LineNumber().Address().Value)
+	fmt.Printf("line number is: %v\n", b.LineNumber().Address().Value())
 
 	// Output: line number is: 7
 }

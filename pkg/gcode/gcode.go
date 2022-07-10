@@ -72,20 +72,12 @@ func (g *Gcode) HasAddress() bool {
 //#endregion
 //#region gcode addressable struct
 
-// GcodeAddresser interface define a gcode entity that include an address entity.
-//
-// A GcodeAddresser[T] object expose an address object of type [T].
-type GcodeAddresser[T gcode_address.AddressType] interface {
-	Gcoder
-	Address() gcode_address.Address[T]
-}
-
 // GcodeAddressable struct that implements GcodeAddresser interface
 //
 // Is composed of a gcode struct and includes an address field to store an address instance
 type GcodeAddressable[T gcode_address.AddressType] struct {
-	Gcode
-	address gcode_address.Address[T]
+	*Gcode
+	address *gcode_address.Address[T]
 }
 
 // String return gcode formatted
@@ -107,7 +99,7 @@ func (g *GcodeAddressable[T]) HasAddress() bool {
 }
 
 // Address return the Address struct that is contained in the Gcode.
-func (g *GcodeAddressable[T]) Address() gcode_address.Address[T] {
+func (g *GcodeAddressable[T]) Address() *gcode_address.Address[T] {
 	return g.address
 }
 
@@ -139,7 +131,7 @@ func NewGcode(word byte) (Gcoder, error) {
 // The value can be string, int32 or float 32 data type.
 //
 // In any case, this method will verify the format of both parameters and return nil with an error description if necessary.
-func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (GcodeAddresser[T], error) {
+func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (*GcodeAddressable[T], error) {
 
 	// Try instace Word struct
 	wrd, err := gcode_word.NewWord(word)
@@ -154,10 +146,10 @@ func NewGcodeAddressable[T gcode_address.AddressType](word byte, address T) (Gco
 	}
 
 	return &GcodeAddressable[T]{
-		Gcode: Gcode{
+		Gcode: &Gcode{
 			word: *wrd,
 		},
-		address: *add,
+		address: add,
 	}, nil
 }
 

@@ -39,8 +39,8 @@ func TestNewAddress(t *testing.T) {
 						return
 					}
 
-					if add.Value != c.value {
-						t.Errorf("got string: %v, want string: %v", add.Value, c.value)
+					if add.Value() != c.value {
+						t.Errorf("got string: %v, want string: %v", add.Value(), c.value)
 					}
 				})
 			}
@@ -96,8 +96,8 @@ func TestNewAddress(t *testing.T) {
 					return
 				}
 
-				if add.Value != c {
-					t.Errorf("got address value: %v, want address value: %v", add.Value, c)
+				if add.Value() != c {
+					t.Errorf("got address value: %v, want address value: %v", add.Value(), c)
 				}
 			})
 		}
@@ -119,8 +119,138 @@ func TestNewAddress(t *testing.T) {
 					return
 				}
 
-				if add.Value != c {
-					t.Errorf("got address value: %v, want address value: %v", add.Value, c)
+				if add.Value() != c {
+					t.Errorf("got address value: %v, want address value: %v", add.Value(), c)
+				}
+			})
+		}
+	})
+}
+
+func TestAddress_SetValue(t *testing.T) {
+	t.Run("set value at string address", func(t *testing.T) {
+
+		t.Run("valid cases", func(t *testing.T) {
+			cases := []struct {
+				value string
+			}{
+				{"\"MYROUTER\""},
+				{"\"\""},
+				{"\"ABCD EFG 123\""},
+				{"\"ABC'X'Y'Z;\"\" 123\""},
+				{"\"ABC'X'Y'Z;\"\" 123\""},
+				{"\"ABC'X'Y'Z;\"\" \"\" 123\""},
+				{"\"ABC'X'Y'Z;\"\"\"\" 123\""},
+			}
+
+			for i, c := range cases {
+
+				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+					add, err := address.NewAddress("\"something\"")
+					if err != nil {
+						t.Errorf("got error: %v, want error: not nil", err)
+					}
+					if add == nil {
+						t.Errorf("got nil address, want string: %v", c.value)
+						return
+					}
+
+					err = add.SetValue(c.value)
+					if err != nil {
+						t.Errorf("got error: %v, want error: not nil", err)
+					}
+					if add.Value() != c.value {
+						t.Errorf("got string: %v, want string: %v", add.Value(), c.value)
+					}
+				})
+			}
+		})
+
+		t.Run("invalid cases", func(t *testing.T) {
+			cases := []struct {
+				value string
+			}{
+				{""},
+				{"1"},
+				{"\""},
+				{"\"\n\""},
+				{"\"\r\""},
+				{"\"\t\""},
+				{"123\""},
+				{"\"123"},
+				{"\"ABC'X'Y'Z;\" 123\""},
+				{"\"ABC'X'Y'Z;\"\"\" 123\""},
+				{"\"ABC'X'Y'Z;\" \"123\""},
+				{"\"ABC'X'Y'Z;\"\"\" \"\" 123\""},
+			}
+
+			for i, c := range cases {
+				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+					add, err := address.NewAddress("\"something\"")
+					if err != nil {
+						t.Errorf("got error: %v, want error: not nil", err)
+					}
+					if add == nil {
+						t.Errorf("got nil address, want string: %v", c.value)
+						return
+					}
+
+					err = add.SetValue(c.value)
+					if err == nil {
+						t.Errorf("got error: nil, want error: not nil")
+					}
+				})
+			}
+		})
+	})
+
+	t.Run("set value at integer address", func(t *testing.T) {
+
+		cases := [5]int32{-111, -1, 0, 1, 111}
+
+		for i, c := range cases {
+			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+				add, err := address.NewAddress[int32](0)
+				if err != nil {
+					t.Errorf("got error: %v, want error: nil", err)
+				}
+				if add == nil {
+					t.Errorf("got address: nil, want address value: %v", c)
+					return
+				}
+
+				err = add.SetValue(c)
+				if err != nil {
+					t.Errorf("got error: %v, want error: nil", err)
+				}
+				if add.Value() != c {
+					t.Errorf("got address value: %v, want address value: %v", add.Value(), c)
+				}
+			})
+		}
+	})
+
+	t.Run("set value at float32 address", func(t *testing.T) {
+
+		cases := [10]float32{-111, -1, 0, 1, 111, 7.5, -0.0002, math.Pi, math.E, math.MaxFloat32}
+
+		for i, c := range cases {
+			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+				add, err := address.NewAddress[float32](0)
+				if err != nil {
+					t.Errorf("got error: %v, want error: nil", err)
+				}
+				if add == nil {
+					t.Errorf("got address: nil, want address value: %v", c)
+					return
+				}
+
+				err = add.SetValue(c)
+				if err != nil {
+					t.Errorf("got error: %v, want error: nil", err)
+				}
+				if add.Value() != c {
+					t.Errorf("got address value: %v, want address value: %v", add.Value(), c)
 				}
 			})
 		}
@@ -152,7 +282,7 @@ func ExampleAddress() {
 		return
 	}
 
-	var value float32 = add.Value
+	var value float32 = add.Value()
 	fmt.Printf("address value is: %v\n", value)
 
 	// Output: address value is: 12
@@ -166,7 +296,7 @@ func ExampleAddress_second() {
 		return
 	}
 
-	add.Value = 3.1415
+	add.SetValue(3.1415)
 
 	fmt.Printf("address value is: %v\n", add.String())
 
@@ -255,6 +385,38 @@ func ExampleAddress_String_second() {
 	fmt.Printf("address value is: %s\n", add.String())
 
 	// Output: address value is: 12.0
+}
+
+func ExampleAddress_Value() {
+	add, err := address.NewAddress[float32](0)
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %v\n", add.Value())
+
+	// Output: address value is: 0
+}
+
+func ExampleAddress_SetValue() {
+	add, err := address.NewAddress[float32](0)
+
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	err = add.SetValue(12)
+	if err != nil {
+		_ = fmt.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	fmt.Printf("address value is: %v\n", add.Value())
+
+	// Output: address value is: 12
 }
 
 //#endregion
