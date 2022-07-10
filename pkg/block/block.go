@@ -55,7 +55,7 @@ type Block struct {
 	// special gcode that store the value of the verification of the integrity of the block
 	check check.Checker
 	// expression attached at the block with some comment. Can be empty
-	comment *string
+	comment string
 }
 
 // String returns the block exported as single-line string format including check and comments section.
@@ -98,7 +98,7 @@ func (b *Block) Checksum() check.Checker {
 // Comment returns the string with the comment of the block. Or nil if there isn't one.
 //
 // Is an expression attached at the block with some comment. Can be empty.
-func (b *Block) Comment() *string {
+func (b *Block) Comment() string {
 	return b.comment
 }
 
@@ -151,8 +151,8 @@ func (b *Block) ToLineWithCheck() string {
 func (b *Block) ToLineWithCheckAndComments() string {
 	line := b.ToLineWithCheck()
 
-	if b.comment != nil {
-		line = strings.Join([]string{line, *b.comment}, BLOCK_SEPARATOR)
+	if len(b.comment) > 0 {
+		line = strings.Join([]string{line, b.comment}, BLOCK_SEPARATOR)
 	}
 
 	return line
@@ -302,7 +302,7 @@ loop:
 				command:    nil,
 				parameters: nil,
 				check:      nil,
-				comment:    nil,
+				comment:    "",
 			}
 
 		} else {
@@ -311,7 +311,7 @@ loop:
 				command:    gcodes[0],
 				parameters: nil,
 				check:      nil,
-				comment:    nil,
+				comment:    "",
 			}
 		}
 	} else {
@@ -330,7 +330,7 @@ loop:
 				command:    gcodes[1],
 				parameters: gcodes[2:], //out of index warning
 				check:      nil,
-				comment:    nil,
+				comment:    "",
 			}
 
 		} else {
@@ -339,7 +339,7 @@ loop:
 				command:    gcodes[0],
 				parameters: gcodes[1:],
 				check:      nil,
-				comment:    nil,
+				comment:    "",
 			}
 		}
 	}
