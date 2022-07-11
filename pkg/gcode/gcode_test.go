@@ -8,8 +8,6 @@ import (
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
-//region unit tests
-
 func TestNewGcode(t *testing.T) {
 	t.Run("valids", func(t *testing.T) {
 
@@ -211,173 +209,60 @@ func TestAddressInmutableOnGcodeAddressable(t *testing.T) {
 	})
 }
 
-//#endregion
-//#region examples
+func TestGcodeCompare(t *testing.T) {
 
-func ExampleNewGcode() {
-
-	gc, err := gcode.NewGcode('X')
+	gcodeA, err := gcode.NewGcode('M')
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		t.Errorf("got %v, want nil error", err)
 	}
 
-	fmt.Printf("%s", gc)
-
-	// Output: X
-}
-
-func ExampleNewGcodeAddressable() {
-
-	gc, err := gcode.NewGcodeAddressable[float32]('X', 12.3)
+	gcodeB, err := gcode.NewGcode('X')
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		t.Errorf("got %v, want nil error", err)
 	}
 
-	fmt.Printf("%s", gc)
-
-	// Output: X12.3
-}
-
-func ExampleGcode_HasAddress() {
-
-	gc, err := gcode.NewGcode('X')
+	gcodeAddressableA, err := gcode.NewGcodeAddressable[int32]('N', 11)
 	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
+		t.Errorf("got %v, want nil error", err)
 	}
 
-	fmt.Printf("%v\n", gc.HasAddress())
-
-	// Output: false
-}
-
-func ExampleGcode_HasAddress_second() {
-
-	gca, err := gcode.NewGcodeAddressable('X', "\"Hola mundo!\"")
+	gcodeAddressableB, err := gcode.NewGcodeAddressable[int32]('N', 22)
 	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
+		t.Errorf("got %v, want nil error", err)
 	}
 
-	fmt.Printf("%v\n", gca.HasAddress())
+	cases := []struct {
+		gcodeBase   gcode.Gcoder
+		gcodeTarget gcode.Gcoder
+		result      bool
+	}{
+		{gcodeA, gcodeA, true},
+		{gcodeA, gcodeB, false},
+		{gcodeA, gcodeAddressableA, false},
+		{gcodeA, gcodeAddressableB, false},
+		{gcodeA, nil, false},
+		{gcodeB, gcodeA, false},
+		{gcodeB, gcodeB, true},
+		{gcodeB, gcodeAddressableA, false},
+		{gcodeB, gcodeAddressableB, false},
+		{gcodeB, nil, false},
+		{gcodeAddressableA, gcodeA, false},
+		{gcodeAddressableA, gcodeB, false},
+		{gcodeAddressableA, gcodeAddressableA, true},
+		{gcodeAddressableA, gcodeAddressableB, false},
+		{gcodeAddressableA, nil, false},
+		{gcodeAddressableB, gcodeA, false},
+		{gcodeAddressableB, gcodeB, false},
+		{gcodeAddressableB, gcodeAddressableA, false},
+		{gcodeAddressableB, gcodeAddressableB, true},
+		{gcodeAddressableB, nil, false},
+	}
 
-	// Output: true
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
+			if c.gcodeBase.Compare(c.gcodeTarget) != c.result {
+				t.Errorf("got %v, want %v", !c.result, c.result)
+			}
+		})
+	}
 }
-
-func ExampleGcode_HasAddress_third() {
-
-	gca, err := gcode.NewGcodeAddressable('X', "\"Hola mundo!\"")
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	var gc gcode.Gcoder = gca
-
-	fmt.Printf("%v\n", gc.HasAddress())
-
-	// Output: true
-}
-
-func ExampleGcode_String() {
-
-	gc, err := gcode.NewGcode('X')
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	fmt.Println(gc)
-
-	// Output: X
-}
-
-func ExampleGcode_String_second() {
-
-	gca, err := gcode.NewGcodeAddressable('X', "\"Hola mundo!\"")
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	fmt.Println(gca)
-
-	// Output: X"Hola mundo!"
-}
-
-func ExampleGcode_String_third() {
-
-	gca, err := gcode.NewGcodeAddressable('X', "\"Hola mundo!\"")
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	var gc gcode.Gcoder = gca
-
-	fmt.Println(gc)
-
-	// Output: X"Hola mundo!"
-}
-
-func ExampleGcode_Word() {
-	gc, err := gcode.NewGcode('D')
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	fmt.Println(gc.Word().String())
-
-	// Output: D
-}
-
-func ExampleGcode_Word_second() {
-	gca, err := gcode.NewGcodeAddressable[int32]('D', 0)
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	fmt.Println(gca.Word().String())
-
-	// Output: D
-}
-
-func ExampleGcodeAddressable_Address() {
-	gc, err := gcode.NewGcodeAddressable[int32]('N', 66555)
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	fmt.Println(gc.Address().String())
-
-	// Output: 66555
-}
-
-func ExampleGcodeAddressable_Address_second() {
-	gca, err := gcode.NewGcodeAddressable[int32]('N', 66555)
-	if err != nil {
-		_ = fmt.Errorf("%s", err.Error())
-		return
-	}
-
-	var gc gcode.Gcoder = gca
-
-	if !gc.HasAddress() {
-		fmt.Println("Ups! gcode not contain address")
-		return
-	}
-
-	if value, ok := gc.(*gcode.GcodeAddressable[int32]); ok {
-		add := value.Address()
-		fmt.Printf("the int32 address recovered is %v\n", add.String())
-	}
-
-	// Output: the int32 address recovered is 66555
-}
-
-//#endregion

@@ -23,11 +23,12 @@ package block
 
 import (
 	"fmt"
+	"hash"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/check"
+	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/checksum"
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
@@ -47,15 +48,17 @@ const (
 // To be constructed using the Parse function from a line of the gcode file.
 type Block struct {
 	// line number of the block. It can be null. Always has an int32 type address.
-	lineNumber *gcode.GcodeAddressable[int32]
+	lineNumber *gcode.GcodeAddressable[uint32]
 	// first gcode expression and main significance of the block. Always is present.
 	command gcode.Gcoder
 	// list of the rest of the gcode expression that adds information to the command. Can be empty.
 	parameters []gcode.Gcoder
 	// special gcode that store the value of the verification of the integrity of the block
-	check check.Checker
+	checksum *gcode.GcodeAddressable[uint32]
 	// expression attached at the block with some comment. Can be empty
 	comment string
+	// instance of the hash algorithm to handle the checksum
+	hash hash.Hash
 }
 
 // String returns the block exported as single-line string format including check and comments section.
@@ -68,7 +71,7 @@ func (b *Block) String() string {
 // LineNumber returns a gcode addressable of the int32 type.
 //
 // Represent the line number of the block. It can be null. Always has an int32 type address.
-func (b *Block) LineNumber() *gcode.GcodeAddressable[int32] {
+func (b *Block) LineNumber() *gcode.GcodeAddressable[uint32] {
 	return b.lineNumber
 }
 
@@ -86,13 +89,56 @@ func (b *Block) Parameters() []gcode.Gcoder {
 	return b.parameters
 }
 
-// Checksum returns the checker struct if the line of the block contained one when the block was parsed.
+// Checksum returns a GcodeAddressable[uint32] if the line of the block contained, else returns nil.
 //
-// The Checker is a special gcode that store the value of the verification of the integrity of the block.
-//
-// Exists two methods of checking: CRC and Checksum. Actually, only CRC is supported.
-func (b *Block) Checksum() check.Checker {
-	return b.check
+// Exists two methods of checking: CRC and Checksum. Actually, only Checksum is supported.
+func (b *Block) Checksum() *gcode.GcodeAddressable[uint32] {
+	return b.checksum
+}
+
+// CalculateChecksum calculates a checksum from the block and returns a new GcodeAddressable[uint32] with the value computed.
+func (b *Block) CalculateChecksum() (*gcode.GcodeAddressable[uint32], error) {
+
+	b.hash.Reset()
+	_, err := b.hash.Write([]byte(b.ToLine()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to calculate hash to block %s: %w", b.ToLine(), err)
+	}
+
+	gc, err := gcode.NewGcodeAddressable('*', uint32(b.hash.Sum(nil)[0]))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create checksum gcode instance with hash %v: %w", uint32(b.hash.Sum(nil)[0]), err)
+	}
+
+	return gc, nil
+}
+
+// UpdateChecksum calculates a checksum from the block and stores him in as a new checksum gcode.
+func (b *Block) UpdateChecksum() error {
+
+	gc, err := b.CalculateChecksum()
+	if err != nil {
+		return fmt.Errorf("failed update checksum of the block %s: %w", b, err)
+	}
+
+	b.checksum = gc
+
+	return nil
+}
+
+// VerifyChecksum calculates a checksum and compare him with the checksum stored in the block, it returns true if both matches.
+func (b *Block) VerifyChecksum() (bool, error) {
+
+	if b.checksum == nil {
+		return false, fmt.Errorf("the block '%s' hasn't check section", b)
+	}
+
+	gc, err := b.CalculateChecksum()
+	if err != nil {
+		return false, fmt.Errorf("failed to calculate hash to the control of the checksum of the block %s: %w", b, err)
+	}
+
+	return b.checksum.Compare(gc), nil
 }
 
 // Comment returns the string with the comment of the block. Or nil if there isn't one.
@@ -135,9 +181,10 @@ func (b *Block) ToLine() string {
 func (b *Block) ToLineWithCheck() string {
 	line := b.ToLine()
 
-	if b.check != nil {
-		checkGcode := b.check.Value()
-		line = strings.Join([]string{line, checkGcode.String()}, BLOCK_SEPARATOR)
+	if b.checksum != nil {
+		line = strings.Join([]string{
+			line,
+			b.checksum.String()}, BLOCK_SEPARATOR)
 	}
 
 	return line
@@ -156,22 +203,6 @@ func (b *Block) ToLineWithCheckAndComments() string {
 	}
 
 	return line
-}
-
-// IsChecked calculate the verification and return true or false if matches the check value in the block.
-//
-// Only is calculated if the block has check section. In another case, return an error
-func (b *Block) IsChecked() (bool, error) {
-	if b.check == nil {
-		return false, fmt.Errorf("this block hasn't check section")
-	}
-
-	checksum, err := check.NewCheck(check.CHECKSUM, b.ToLine())
-	if err != nil {
-		return false, fmt.Errorf("failed to calculate checksum value: %w", err)
-	}
-
-	return checksum.Value() == b.check.Value(), nil
 }
 
 //#endregion
@@ -291,18 +322,22 @@ loop:
 		if ww.String() == "N" {
 
 			//convert
-			var ln *gcode.GcodeAddressable[int32]
+			var ln *gcode.GcodeAddressable[uint32]
+			var ln2 *gcode.GcodeAddressable[int32]
 			var ok bool
-			if ln, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
+			if ln2, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
 				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it")
 			}
+
+			ln, _ = gcode.NewGcodeAddressable('N', uint32(ln2.Address().Value()))
 
 			b = &Block{
 				lineNumber: ln,
 				command:    nil,
 				parameters: nil,
-				check:      nil,
+				checksum:   nil,
 				comment:    "",
+				hash:       checksum.New(),
 			}
 
 		} else {
@@ -310,8 +345,9 @@ loop:
 				lineNumber: nil,
 				command:    gcodes[0],
 				parameters: nil,
-				check:      nil,
+				checksum:   nil,
 				comment:    "",
+				hash:       checksum.New(),
 			}
 		}
 	} else {
@@ -319,18 +355,22 @@ loop:
 		if ww.String() == "N" {
 
 			//convert
-			var ln *gcode.GcodeAddressable[int32]
+			var ln *gcode.GcodeAddressable[uint32]
+			var ln2 *gcode.GcodeAddressable[int32]
 			var ok bool
-			if ln, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
+			if ln2, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
 				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it: %v %v", ok, gcodes[0])
 			}
+
+			ln, _ = gcode.NewGcodeAddressable('N', uint32(ln2.Address().Value()))
 
 			b = &Block{
 				lineNumber: ln,
 				command:    gcodes[1],
 				parameters: gcodes[2:], //out of index warning
-				check:      nil,
+				checksum:   nil,
 				comment:    "",
+				hash:       checksum.New(),
 			}
 
 		} else {
@@ -338,8 +378,9 @@ loop:
 				lineNumber: nil,
 				command:    gcodes[0],
 				parameters: gcodes[1:],
-				check:      nil,
+				checksum:   nil,
 				comment:    "",
+				hash:       checksum.New(),
 			}
 		}
 	}
