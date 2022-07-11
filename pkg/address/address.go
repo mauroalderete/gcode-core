@@ -17,7 +17,7 @@ import (
 
 // AddressType interface defines the restriction type used as type generic to Address model
 type AddressType interface {
-	string | int32 | float32
+	string | int32 | float32 | uint32
 }
 
 // Address[T AddressType] struct model a address of a gcode.
