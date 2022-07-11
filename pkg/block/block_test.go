@@ -8,8 +8,6 @@ import (
 	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
-//#region unit tests
-
 func TestParse(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		var cases = [1]struct {
@@ -77,193 +75,73 @@ func TestBlockFields(t *testing.T) {
 	})
 }
 
-//#endregion
-//#region examples
-
-func ExampleParse() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+func TestBlockChecksumUpdate(t *testing.T) {
+	cases := []struct {
+		line     string
+		checksum uint32
+	}{
+		{"N3 T0", 57},
+		{"N4 G92 E0", 67},
+		{"N5 G28", 22},
+		{"N6 G1 F1500.0", 82},
+		{"N7 G1 X2.0 Y2.0 F3000.0", 85},
+		{"N8 G1 X3.0 Y3.0", 33},
 	}
 
-	fmt.Printf("line is: %s\n", b.ToLineWithCheckAndComments())
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
 
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
+			b, err := block.Parse(c.line)
+			if err != nil {
+				t.Errorf("got block error: %v, want block error: nil", err)
+			}
+
+			err = b.UpdateChecksum()
+			if err != nil {
+				t.Errorf("got checksum error: %v, want checksum error: nil", err)
+			}
+
+			if b.Checksum().Address().Value() != c.checksum {
+				t.Errorf("got %v, want %v", b.Checksum(), c.checksum)
+			}
+		})
+	}
 }
 
-func ExampleBlock_Checksum() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+func TestBlockChecksumVerify(t *testing.T) {
+	cases := []struct {
+		line     string
+		checksum uint32
+	}{
+		{"N3 T0", 57},
+		{"N4 G92 E0", 67},
+		{"N5 G28", 22},
+		{"N6 G1 F1500.0", 82},
+		{"N7 G1 X2.0 Y2.0 F3000.0", 85},
+		{"N8 G1 X3.0 Y3.0", 33},
 	}
 
-	if b.Checksum() == nil {
-		fmt.Println("checksum isn't available")
-		return
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
+
+			b, err := block.Parse(c.line)
+			if err != nil {
+				t.Errorf("got block error: %v, want block error: nil", err)
+			}
+
+			err = b.UpdateChecksum()
+			if err != nil {
+				t.Errorf("got checksum error: %v, want checksum error: nil", err)
+			}
+
+			res, err := b.VerifyChecksum()
+			if err != nil {
+				t.Errorf("got verify error: %v, want verify error: nil", err)
+			}
+
+			if !res {
+				t.Errorf("got %v, want %v", b.Checksum(), c.checksum)
+			}
+		})
 	}
-
-	fmt.Printf("checksum is: %s\n", b.Checksum().Value().String())
-
-	// Output: checksum isn't available
 }
-
-func ExampleBlock_Command() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	if b.Command() == nil {
-		fmt.Println("command isn't available")
-		return
-	}
-
-	fmt.Printf("command is: %s\n", b.Command().String())
-
-	// Output: command is: G1
-}
-
-func ExampleBlock_Comment() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	fmt.Printf("comment len is: %d\n", len(b.Comment()))
-
-	// Output: comment len is: 0
-}
-
-func ExampleBlock_IsChecked() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	checked, err := b.IsChecked()
-
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		return
-	}
-
-	fmt.Printf("isChecked: %v\n", checked)
-
-	// Output: this block hasn't check section
-}
-
-func ExampleBlock_LineNumber() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	if b.LineNumber() == nil {
-		fmt.Println("line number isn't available")
-		return
-	}
-
-	fmt.Printf("line number is: %v\n", b.LineNumber().Address().Value())
-
-	// Output: line number is: 7
-}
-
-func ExampleBlock_Parameters() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	if b.Parameters() == nil {
-		fmt.Println("parameters aren't available")
-		return
-	}
-
-	for i, p := range b.Parameters() {
-		fmt.Printf("[%v]: %s\n", i, p.String())
-	}
-
-	// Output:
-	// [0]: X2.0
-	// [1]: Y2.0
-	// [2]: F3000.0
-}
-
-func ExampleBlock_String() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	fmt.Printf("line is: %s\n", b.String())
-
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
-}
-
-func ExampleBlock_ToLine() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	fmt.Printf("line is: %s\n", b.ToLine())
-
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
-}
-
-func ExampleBlock_ToLineWithCheck() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	fmt.Printf("line is: %s\n", b.ToLineWithCheck())
-
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
-}
-
-func ExampleBlock_ToLineWithCheckAndComments() {
-	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-	b, err := block.Parse(source)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	fmt.Printf("line is: %s\n", b.ToLineWithCheckAndComments())
-
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
-}
-
-//#endregion
