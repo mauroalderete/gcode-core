@@ -41,6 +41,7 @@ import (
 type Gcoder interface {
 	fmt.Stringer
 	Word() gcode_word.Word
+	Compare(Gcoder) bool
 	HasAddress() bool
 }
 
@@ -59,6 +60,23 @@ func (g *Gcode) String() string {
 // Word return a copy of the word struct in the gcode
 func (g *Gcode) Word() gcode_word.Word {
 	return g.word
+}
+
+// Compare allows checking if the current entity is equal to a Gcoder input
+//
+// This method is executed when to be called from a Gcode instance or a Gcoder instance that contains a reference to a Gcode object.
+// If the input Gcoder does not implement some gcode.Addressable data type then it returns false
+func (g *Gcode) Compare(gcode Gcoder) bool {
+
+	if gcode == nil {
+		return false
+	}
+
+	if gcode.HasAddress() {
+		return false
+	}
+
+	return g.word == gcode.Word()
 }
 
 // HasAddress indicate if the gcode contains or not an address.
@@ -88,6 +106,19 @@ func (g *GcodeAddressable[T]) String() string {
 // Word return a copy of the word struct in the gcode
 func (g *GcodeAddressable[T]) Word() gcode_word.Word {
 	return g.word
+}
+
+// Compare allows checking if the current entity is equal to a Gcoder input
+//
+// This method is executed when to be called from a Gcode instance or a Gcoder instance that contains a reference to a Gcode object.
+// If the input Gcoder does not implement some gcode.Addressable data type then it returns false
+func (g *GcodeAddressable[T]) Compare(gcode Gcoder) bool {
+
+	if gca, ok := gcode.(*GcodeAddressable[T]); ok && gca != nil {
+		return g.word == gca.word && g.address.Compare(*gca.address)
+	}
+
+	return false
 }
 
 // HasAddress indicate if the gcode contain or not an address.
