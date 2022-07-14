@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/gcode"
+	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
 func TestParse(t *testing.T) {

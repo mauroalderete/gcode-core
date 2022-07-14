@@ -28,8 +28,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/checksum"
-	"github.com/mauroalderete/gcode-skew-transform-cli/gcode"
+	"github.com/mauroalderete/gcode-cli/checksum"
+	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
 const (

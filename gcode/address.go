@@ -1,10 +1,3 @@
-// address package allows store and management the representation of the part assigned to the value of a gcode.
-//
-// A gcode can have or doesn't have an address. When it has, the address must be of either int32, float32 or string data type.
-//
-// This package contains a constructor that returns an address of some of these data types defined by the AddressType interface.
-//
-// An address struct is bound with a series of methods and functions that allow you to operate with the value of the address.
 package gcode
 
 import (

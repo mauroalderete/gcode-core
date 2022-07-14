@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/gcode"
+	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
 //#region examples

@@ -3,7 +3,7 @@ package block_test
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/block"
+	"github.com/mauroalderete/gcode-cli/block"
 )
 
 func ExampleParse() {

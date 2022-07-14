@@ -3,7 +3,7 @@ package gcode_test
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/gcode"
+	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
 func ExampleNewGcode() {

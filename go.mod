@@ -1,3 +1,3 @@
-module github.com/mauroalderete/gcode-skew-transform-cli
+module github.com/mauroalderete/gcode-cli
 
 go 1.18
