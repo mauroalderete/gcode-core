@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/mauroalderete/gcode-cli/block"
+	"github.com/mauroalderete/gcode-cli/checksum"
 )
 
 func ExampleParse() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -23,7 +24,7 @@ func ExampleParse() {
 func ExampleBlock_Checksum() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -42,7 +43,7 @@ func ExampleBlock_Checksum() {
 func ExampleBlock_Command() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -61,7 +62,7 @@ func ExampleBlock_Command() {
 func ExampleBlock_Comment() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -75,7 +76,7 @@ func ExampleBlock_Comment() {
 func ExampleBlock_CalculateChecksum() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -96,7 +97,7 @@ func ExampleBlock_CalculateChecksum() {
 func ExampleBlock_UpdateChecksum() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -117,7 +118,7 @@ func ExampleBlock_UpdateChecksum() {
 func ExampleBlock_VerifyChecksum() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -139,7 +140,7 @@ func ExampleBlock_VerifyChecksum() {
 func ExampleBlock_LineNumber() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -158,7 +159,7 @@ func ExampleBlock_LineNumber() {
 func ExampleBlock_Parameters() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -182,7 +183,7 @@ func ExampleBlock_Parameters() {
 func ExampleBlock_String() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -196,7 +197,7 @@ func ExampleBlock_String() {
 func ExampleBlock_ToLine() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -210,7 +211,7 @@ func ExampleBlock_ToLine() {
 func ExampleBlock_ToLineWithCheck() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -224,7 +225,7 @@ func ExampleBlock_ToLineWithCheck() {
 func ExampleBlock_ToLineWithCheckAndComments() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
-	b, err := block.Parse(source)
+	b, err := block.Parse(source, checksum.New())
 	if err != nil {
 		fmt.Println(err.Error())
 		return

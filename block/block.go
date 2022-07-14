@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mauroalderete/gcode-cli/checksum"
 	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
@@ -214,7 +213,7 @@ func (b *Block) ToLineWithCheckAndComments() string {
 // Try to extract each section from de block line to stores.
 //
 // Return an error if was a problem.
-func Parse(s string) (*Block, error) {
+func Parse(s string, checksum hash.Hash) (*Block, error) {
 
 	pblock := prepareSourceToParse(s)
 
@@ -337,7 +336,7 @@ loop:
 				parameters: nil,
 				checksum:   nil,
 				comment:    "",
-				hash:       checksum.New(),
+				hash:       checksum,
 			}
 
 		} else {
@@ -347,7 +346,7 @@ loop:
 				parameters: nil,
 				checksum:   nil,
 				comment:    "",
-				hash:       checksum.New(),
+				hash:       checksum,
 			}
 		}
 	} else {
@@ -370,7 +369,7 @@ loop:
 				parameters: gcodes[2:], //out of index warning
 				checksum:   nil,
 				comment:    "",
-				hash:       checksum.New(),
+				hash:       checksum,
 			}
 
 		} else {
@@ -380,7 +379,7 @@ loop:
 				parameters: gcodes[1:],
 				checksum:   nil,
 				comment:    "",
-				hash:       checksum.New(),
+				hash:       checksum,
 			}
 		}
 	}

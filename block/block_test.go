@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mauroalderete/gcode-cli/checksum"
 	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
@@ -17,7 +18,7 @@ func TestParse(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				b, err := Parse(c.source)
+				b, err := Parse(c.source, checksum.New())
 				if err != nil {
 					t.Errorf("got %v, want nil error", err)
 					return
@@ -44,7 +45,7 @@ func TestBlockFields(t *testing.T) {
 	t.Run("command", func(t *testing.T) {
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
-				b, err := Parse(c.source)
+				b, err := Parse(c.source, checksum.New())
 				if err != nil {
 					t.Errorf("got %v, want nil error", err)
 					return
@@ -90,7 +91,7 @@ func TestBlockChecksumUpdate(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
 
-			b, err := Parse(c.line)
+			b, err := Parse(c.line, checksum.New())
 			if err != nil {
 				t.Errorf("got block error: %v, want block error: nil", err)
 			}
@@ -123,7 +124,7 @@ func TestBlockChecksumVerify(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
 
-			b, err := Parse(c.line)
+			b, err := Parse(c.line, checksum.New())
 			if err != nil {
 				t.Errorf("got block error: %v, want block error: nil", err)
 			}
