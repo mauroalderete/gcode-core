@@ -1,11 +1,9 @@
-package address_test
+package gcode
 
 import (
 	"fmt"
 	"math"
 	"testing"
-
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
 )
 
 //#region unit tests
@@ -29,7 +27,7 @@ func TestNewAddress(t *testing.T) {
 			for i, c := range cases {
 
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					add, err := address.NewAddress(c.value)
+					add, err := NewAddress(c.value)
 					if err != nil {
 						t.Errorf("got error: %v, want error: not nil", err)
 					}
@@ -66,7 +64,7 @@ func TestNewAddress(t *testing.T) {
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					add, err := address.NewAddress(c.value)
+					add, err := NewAddress(c.value)
 
 					if add != nil {
 						t.Errorf("got address: %v, want nil address", add)
@@ -86,7 +84,7 @@ func TestNewAddress(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				add, err := address.NewAddress(c)
+				add, err := NewAddress(c)
 				if err != nil {
 					t.Errorf("got error: %v, want error: nil", err)
 				}
@@ -109,7 +107,7 @@ func TestNewAddress(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				add, err := address.NewAddress(c)
+				add, err := NewAddress(c)
 				if err != nil {
 					t.Errorf("got error: %v, want error: nil", err)
 				}
@@ -146,7 +144,7 @@ func TestAddress_SetValue(t *testing.T) {
 			for i, c := range cases {
 
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					add, err := address.NewAddress("\"something\"")
+					add, err := NewAddress("\"something\"")
 					if err != nil {
 						t.Errorf("got error: %v, want error: not nil", err)
 					}
@@ -186,7 +184,7 @@ func TestAddress_SetValue(t *testing.T) {
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					add, err := address.NewAddress("\"something\"")
+					add, err := NewAddress("\"something\"")
 					if err != nil {
 						t.Errorf("got error: %v, want error: not nil", err)
 					}
@@ -210,7 +208,7 @@ func TestAddress_SetValue(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				add, err := address.NewAddress[int32](0)
+				add, err := NewAddress[int32](0)
 				if err != nil {
 					t.Errorf("got error: %v, want error: nil", err)
 				}
@@ -236,7 +234,7 @@ func TestAddress_SetValue(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				add, err := address.NewAddress[float32](0)
+				add, err := NewAddress[float32](0)
 				if err != nil {
 					t.Errorf("got error: %v, want error: nil", err)
 				}
@@ -263,7 +261,7 @@ func TestAddress_SetValue(t *testing.T) {
 func ExampleIsAddressStringValid() {
 	const s = "\"Hola \"\"Mundo\"\" \""
 
-	err := address.IsAddressStringValid(s)
+	err := IsAddressStringValid(s)
 	if err != nil {
 		_ = fmt.Errorf("invalid format: %v", err)
 		return
@@ -275,7 +273,7 @@ func ExampleIsAddressStringValid() {
 }
 
 func ExampleAddress() {
-	add, err := address.NewAddress[float32](12)
+	add, err := NewAddress[float32](12)
 
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
@@ -289,7 +287,7 @@ func ExampleAddress() {
 }
 
 func ExampleAddress_second() {
-	add, err := address.NewAddress[float32](math.Pi)
+	add, err := NewAddress[float32](math.Pi)
 
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
@@ -304,7 +302,7 @@ func ExampleAddress_second() {
 }
 
 func ExampleNewAddress() {
-	add, err := address.NewAddress[int32](-23)
+	add, err := NewAddress[int32](-23)
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
 		return
@@ -316,7 +314,7 @@ func ExampleNewAddress() {
 }
 
 func ExampleNewAddress_second() {
-	add, err := address.NewAddress[float32](math.Pi)
+	add, err := NewAddress[float32](math.Pi)
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
 		return
@@ -328,7 +326,7 @@ func ExampleNewAddress_second() {
 }
 
 func ExampleNewAddress_third() {
-	add, err := address.NewAddress("\"Hola Mundo!\"")
+	add, err := NewAddress("\"Hola Mundo!\"")
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
 		return
@@ -340,13 +338,13 @@ func ExampleNewAddress_third() {
 }
 
 func ExampleAddress_Compare() {
-	addBase, err := address.NewAddress[float32](math.Pi)
+	addBase, err := NewAddress[float32](math.Pi)
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
 		return
 	}
 
-	addTarget, err := address.NewAddress[float32](3.1415)
+	addTarget, err := NewAddress[float32](3.1415)
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
 		return
@@ -362,7 +360,7 @@ func ExampleAddress_Compare() {
 }
 
 func ExampleAddress_String() {
-	add, err := address.NewAddress("\"Hola Mundo!\"")
+	add, err := NewAddress("\"Hola Mundo!\"")
 
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
@@ -375,7 +373,7 @@ func ExampleAddress_String() {
 }
 
 func ExampleAddress_String_second() {
-	add, err := address.NewAddress[float32](12)
+	add, err := NewAddress[float32](12)
 
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
@@ -388,7 +386,7 @@ func ExampleAddress_String_second() {
 }
 
 func ExampleAddress_Value() {
-	add, err := address.NewAddress[float32](0)
+	add, err := NewAddress[float32](0)
 
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)
@@ -401,7 +399,7 @@ func ExampleAddress_Value() {
 }
 
 func ExampleAddress_SetValue() {
-	add, err := address.NewAddress[float32](0)
+	add, err := NewAddress[float32](0)
 
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %v", err)

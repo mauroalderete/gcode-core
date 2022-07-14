@@ -1,10 +1,8 @@
-package checksum_test
+package checksum
 
 import (
 	"fmt"
 	"testing"
-
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/checksum"
 )
 
 func TestNew(t *testing.T) {
@@ -20,7 +18,7 @@ func TestNew(t *testing.T) {
 		{"N8 G1 X3.0 Y3.0", 33},
 	}
 
-	h := checksum.New()
+	h := New()
 
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
@@ -39,14 +37,14 @@ func TestNew(t *testing.T) {
 
 func TestConfiguration(t *testing.T) {
 	t.Run("size", func(t *testing.T) {
-		if checksum.New().Size() != 1 {
-			t.Errorf("got %v, want 1", checksum.New().Size())
+		if New().Size() != 1 {
+			t.Errorf("got %v, want 1", New().Size())
 		}
 	})
 
 	t.Run("block size", func(t *testing.T) {
-		if checksum.New().BlockSize() != 1 {
-			t.Errorf("got %v, want 1", checksum.New().BlockSize())
+		if New().BlockSize() != 1 {
+			t.Errorf("got %v, want 1", New().BlockSize())
 		}
 	})
 }

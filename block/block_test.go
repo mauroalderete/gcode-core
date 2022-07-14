@@ -1,11 +1,10 @@
-package block_test
+package block
 
 import (
 	"fmt"
 	"testing"
 
-	block "github.com/mauroalderete/gcode-skew-transform-cli/pkg/block"
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
+	"github.com/mauroalderete/gcode-skew-transform-cli/gcode"
 )
 
 func TestParse(t *testing.T) {
@@ -18,7 +17,7 @@ func TestParse(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				b, err := block.Parse(c.source)
+				b, err := Parse(c.source)
 				if err != nil {
 					t.Errorf("got %v, want nil error", err)
 					return
@@ -45,7 +44,7 @@ func TestBlockFields(t *testing.T) {
 	t.Run("command", func(t *testing.T) {
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
-				b, err := block.Parse(c.source)
+				b, err := Parse(c.source)
 				if err != nil {
 					t.Errorf("got %v, want nil error", err)
 					return
@@ -91,7 +90,7 @@ func TestBlockChecksumUpdate(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
 
-			b, err := block.Parse(c.line)
+			b, err := Parse(c.line)
 			if err != nil {
 				t.Errorf("got block error: %v, want block error: nil", err)
 			}
@@ -124,7 +123,7 @@ func TestBlockChecksumVerify(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
 
-			b, err := block.Parse(c.line)
+			b, err := Parse(c.line)
 			if err != nil {
 				t.Errorf("got block error: %v, want block error: nil", err)
 			}

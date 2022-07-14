@@ -1,11 +1,11 @@
-// word package represents the letter of a gcode command that identifies a single action or a parameter.
+// this file containts the word model. Represents the letter of a gcode command that identifies a single action or a parameter.
 //
 // The words consist of a simple struct that implements a single value string. This value is a letter according to specification to gcode.
 //
 // Each word contains a single letter in uppercase. Each one of them can come accompanied by an address or not, or it needs other gcodes that give more information in the form of parameters.
 //
 // Exist, different classes the words, some are commands and others are used likes parameters for the commands.
-package word
+package gcode
 
 import (
 	"fmt"

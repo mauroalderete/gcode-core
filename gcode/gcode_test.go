@@ -1,11 +1,8 @@
-package gcode_test
+package gcode
 
 import (
 	"fmt"
 	"testing"
-
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/address"
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/gcode"
 )
 
 func TestNewGcode(t *testing.T) {
@@ -21,7 +18,7 @@ func TestNewGcode(t *testing.T) {
 
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-				gc, err := gcode.NewGcode(c.word)
+				gc, err := NewGcode(c.word)
 				if err != nil {
 					t.Errorf("got %v, want X12", err)
 					return
@@ -50,7 +47,7 @@ func TestNewGcode(t *testing.T) {
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					gc, err := gcode.NewGcode(c.word)
+					gc, err := NewGcode(c.word)
 					if err == nil {
 						t.Errorf("got nil error, want not nil error")
 					}
@@ -67,7 +64,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 	t.Run("valids", func(t *testing.T) {
 
 		t.Run("address integer", func(t *testing.T) {
-			gc, err := gcode.NewGcodeAddressable[int32]('X', 12)
+			gc, err := NewGcodeAddressable[int32]('X', 12)
 			if err != nil {
 				t.Errorf("got %v, want X12", err)
 				return
@@ -78,7 +75,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 		})
 
 		t.Run("address float", func(t *testing.T) {
-			gc, err := gcode.NewGcodeAddressable[float32]('X', 12.3)
+			gc, err := NewGcodeAddressable[float32]('X', 12.3)
 			if err != nil {
 				t.Errorf("got %v, want X12.3", err)
 				return
@@ -89,7 +86,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 		})
 
 		t.Run("address string", func(t *testing.T) {
-			gc, err := gcode.NewGcodeAddressable('X', "\"lorem ipsu\"")
+			gc, err := NewGcodeAddressable('X', "\"lorem ipsu\"")
 			if err != nil {
 				t.Errorf("got %v, want X\"lorem ipsu\"", err)
 				return
@@ -114,7 +111,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					gc, err := gcode.NewGcodeAddressable(c.word, c.address)
+					gc, err := NewGcodeAddressable(c.word, c.address)
 					if err == nil {
 						t.Errorf("got nil error, want not nil error")
 					}
@@ -137,7 +134,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 
 			for i, c := range cases {
 				t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
-					gc, err := gcode.NewGcodeAddressable(c.word, c.address)
+					gc, err := NewGcodeAddressable(c.word, c.address)
 					if err == nil {
 						t.Errorf("got nil error, want not nil error")
 					}
@@ -152,7 +149,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 
 func TestAddressSetValuePersistenceOnGcodeAddressable(t *testing.T) {
 	t.Run("caso 1", func(t *testing.T) {
-		gc, err := gcode.NewGcodeAddressable[int32]('X', 99)
+		gc, err := NewGcodeAddressable[int32]('X', 99)
 		if err != nil {
 			t.Errorf("got error: %v, want error: nil", err)
 		}
@@ -160,7 +157,7 @@ func TestAddressSetValuePersistenceOnGcodeAddressable(t *testing.T) {
 			t.Errorf("got gcode: nil, want gcode: not nil")
 		}
 
-		var add *address.Address[int32]
+		var add *Address[int32]
 		add = gc.Address()
 		err = add.SetValue(12)
 		if err != nil {
@@ -183,7 +180,7 @@ func TestAddressSetValuePersistenceOnGcodeAddressable(t *testing.T) {
 
 func TestAddressInmutableOnGcodeAddressable(t *testing.T) {
 	t.Run("caso 1", func(t *testing.T) {
-		gc, err := gcode.NewGcodeAddressable[int32]('X', 100)
+		gc, err := NewGcodeAddressable[int32]('X', 100)
 		if err != nil {
 			t.Errorf("got error: %v, want error: nil", err)
 		}
@@ -191,7 +188,7 @@ func TestAddressInmutableOnGcodeAddressable(t *testing.T) {
 			t.Errorf("got gcode: nil, want gcode: not nil")
 		}
 
-		add, err := address.NewAddress[int32](101)
+		add, err := NewAddress[int32](101)
 		if err != nil {
 			t.Errorf("got error: %v, want error: nil", err)
 		}
@@ -211,29 +208,29 @@ func TestAddressInmutableOnGcodeAddressable(t *testing.T) {
 
 func TestGcodeCompare(t *testing.T) {
 
-	gcodeA, err := gcode.NewGcode('M')
+	gcodeA, err := NewGcode('M')
 	if err != nil {
 		t.Errorf("got %v, want nil error", err)
 	}
 
-	gcodeB, err := gcode.NewGcode('X')
+	gcodeB, err := NewGcode('X')
 	if err != nil {
 		t.Errorf("got %v, want nil error", err)
 	}
 
-	gcodeAddressableA, err := gcode.NewGcodeAddressable[int32]('N', 11)
+	gcodeAddressableA, err := NewGcodeAddressable[int32]('N', 11)
 	if err != nil {
 		t.Errorf("got %v, want nil error", err)
 	}
 
-	gcodeAddressableB, err := gcode.NewGcodeAddressable[int32]('N', 22)
+	gcodeAddressableB, err := NewGcodeAddressable[int32]('N', 22)
 	if err != nil {
 		t.Errorf("got %v, want nil error", err)
 	}
 
 	cases := []struct {
-		gcodeBase   gcode.Gcoder
-		gcodeTarget gcode.Gcoder
+		gcodeBase   Gcoder
+		gcodeTarget Gcoder
 		result      bool
 	}{
 		{gcodeA, gcodeA, true},

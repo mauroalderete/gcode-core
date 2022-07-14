@@ -1,10 +1,8 @@
-package word_test
+package gcode
 
 import (
 	"fmt"
 	"testing"
-
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/word"
 )
 
 //region unit tests
@@ -25,7 +23,7 @@ func TestNewWord(t *testing.T) {
 
 		for i, tc := range validCases {
 			t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
-				w, err := word.NewWord(tc.value)
+				w, err := NewWord(tc.value)
 				if err != nil {
 					t.Errorf("got %v, want %v and %v", err, tc.expectedValue, tc.expectedString)
 				}
@@ -57,7 +55,7 @@ func TestNewWord(t *testing.T) {
 
 		for i, tc := range invalidCases {
 			t.Run(fmt.Sprintf("(%d)", i), func(t *testing.T) {
-				w, err := word.NewWord(tc.value)
+				w, err := NewWord(tc.value)
 
 				if w != nil {
 					t.Errorf("got %v word, want word nil", w)
@@ -76,7 +74,7 @@ func TestNewWord(t *testing.T) {
 
 func ExampleNewWord() {
 
-	w, err := word.NewWord('M')
+	w, err := NewWord('M')
 	if err != nil {
 		_ = fmt.Errorf("%s:", err.Error())
 		return
@@ -88,7 +86,7 @@ func ExampleNewWord() {
 }
 
 func ExampleWord_String() {
-	w, err := word.NewWord('M')
+	w, err := NewWord('M')
 	if err != nil {
 		_ = fmt.Errorf("%s:", err.Error())
 		return
@@ -100,7 +98,7 @@ func ExampleWord_String() {
 }
 
 func ExampleWord_Value() {
-	w, err := word.NewWord('M')
+	w, err := NewWord('M')
 	if err != nil {
 		_ = fmt.Errorf("%s:", err.Error())
 		return

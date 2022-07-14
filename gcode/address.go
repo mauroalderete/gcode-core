@@ -5,7 +5,7 @@
 // This package contains a constructor that returns an address of some of these data types defined by the AddressType interface.
 //
 // An address struct is bound with a series of methods and functions that allow you to operate with the value of the address.
-package address
+package gcode
 
 import (
 	"fmt"
