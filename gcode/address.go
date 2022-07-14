@@ -52,6 +52,7 @@ func (a *Address[T]) SetValue(value T) error {
 //
 // For example, for the float32 value 13, the string returned will be "13.0".
 func (a *Address[T]) String() string {
+
 	if float32Value, ok := any(a.Value()).(float32); ok {
 		sv := strconv.FormatFloat(float64(float32Value), 'f', -1, 32)
 		if !strings.Contains(sv, ".") {
@@ -59,6 +60,7 @@ func (a *Address[T]) String() string {
 		}
 		return sv
 	}
+
 	return fmt.Sprintf("%v", a.Value())
 }
 
