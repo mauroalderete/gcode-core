@@ -16,7 +16,7 @@ type GcodeFactory struct{}
 // Receive a word that represents the letter of the command of a gcode.
 //
 // If the word is an unknown symbol it returns nil with an error description.
-func (g *GcodeFactory) NewGcode(word byte) (gcode.Gcoder, error) {
+func (g *GcodeFactory) NewUndressableGcode(word byte) (gcode.Gcoder, error) {
 	ng, err := unaddressablegcode.New(word)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func TestGcodeFactoryNewGcode(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			gc, err := gcodeFactory.NewGcode(tc.input)
+			gc, err := gcodeFactory.NewUndressableGcode(tc.input)
 
 			if tc.valid {
 				if err != nil {

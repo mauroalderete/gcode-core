@@ -47,17 +47,19 @@ const (
 // To be constructed using the Parse function from a line of the gcode file.
 type Block struct {
 	// line number of the block. It can be null. Always has an int32 type address.
-	lineNumber *gcode.GcodeAddressable[uint32]
+	lineNumber gcode.AddresableGcoder[uint32]
 	// first gcode expression and main significance of the block. Always is present.
 	command gcode.Gcoder
 	// list of the rest of the gcode expression that adds information to the command. Can be empty.
 	parameters []gcode.Gcoder
 	// special gcode that store the value of the verification of the integrity of the block
-	checksum *gcode.GcodeAddressable[uint32]
+	checksum gcode.AddresableGcoder[uint32]
 	// expression attached at the block with some comment. Can be empty
 	comment string
 	// instance of the hash algorithm to handle the checksum
 	hash hash.Hash
+	// gcode factory
+	gcodeFactory gcode.GcoderFactory
 }
 
 // String returns the block exported as single-line string format including check and comments section.
@@ -70,7 +72,7 @@ func (b *Block) String() string {
 // LineNumber returns a gcode addressable of the int32 type.
 //
 // Represent the line number of the block. It can be null. Always has an int32 type address.
-func (b *Block) LineNumber() *gcode.GcodeAddressable[uint32] {
+func (b *Block) LineNumber() gcode.AddresableGcoder[uint32] {
 	return b.lineNumber
 }
 
@@ -91,12 +93,12 @@ func (b *Block) Parameters() []gcode.Gcoder {
 // Checksum returns a GcodeAddressable[uint32] if the line of the block contained, else returns nil.
 //
 // Exists two methods of checking: CRC and Checksum. Actually, only Checksum is supported.
-func (b *Block) Checksum() *gcode.GcodeAddressable[uint32] {
+func (b *Block) Checksum() gcode.AddresableGcoder[uint32] {
 	return b.checksum
 }
 
 // CalculateChecksum calculates a checksum from the block and returns a new GcodeAddressable[uint32] with the value computed.
-func (b *Block) CalculateChecksum() (*gcode.GcodeAddressable[uint32], error) {
+func (b *Block) CalculateChecksum() (gcode.AddresableGcoder[uint32], error) {
 
 	b.hash.Reset()
 	_, err := b.hash.Write([]byte(b.ToLine()))
@@ -104,7 +106,7 @@ func (b *Block) CalculateChecksum() (*gcode.GcodeAddressable[uint32], error) {
 		return nil, fmt.Errorf("failed to calculate hash to block %s: %w", b.ToLine(), err)
 	}
 
-	gc, err := gcode.NewGcodeAddressable('*', uint32(b.hash.Sum(nil)[0]))
+	gc, err := b.gcodeFactory.NewAddressableGcodeUint32('*', uint32(b.hash.Sum(nil)[0]))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create checksum gcode instance with hash %v: %w", uint32(b.hash.Sum(nil)[0]), err)
 	}
@@ -213,7 +215,7 @@ func (b *Block) ToLineWithCheckAndComments() string {
 // Try to extract each section from de block line to stores.
 //
 // Return an error if was a problem.
-func Parse(s string, checksum hash.Hash) (*Block, error) {
+func Parse(s string, checksum hash.Hash, gcodeFactory gcode.GcoderFactory) (*Block, error) {
 
 	pblock := prepareSourceToParse(s)
 
@@ -259,7 +261,7 @@ loop:
 			//es int?
 			valueInt, err := strconv.ParseInt(paddress, 10, 32)
 			if err == nil {
-				gca, err = gcode.NewGcodeAddressable(pword, int32(valueInt))
+				gca, err = gcodeFactory.NewAddressableGcodeInt32(pword, int32(valueInt))
 				if err != nil {
 					return nil, err
 				}
@@ -274,7 +276,7 @@ loop:
 			//es float?
 			valueFloat, err := strconv.ParseFloat(paddress, 32)
 			if err == nil {
-				gca, err = gcode.NewGcodeAddressable(pword, float32(valueFloat))
+				gca, err = gcodeFactory.NewAddressableGcodeFloat32(pword, float32(valueFloat))
 				if err != nil {
 					return nil, err
 				}
@@ -287,7 +289,7 @@ loop:
 			}
 
 			//asumo string
-			gca, err = gcode.NewGcodeAddressable(pword, paddress)
+			gca, err = gcodeFactory.NewAddressableGcodeString(pword, paddress)
 			if err != nil {
 				return nil, err
 			}
@@ -298,7 +300,7 @@ loop:
 			pblock = pblock[i:]
 			continue
 		} else {
-			gc, err := gcode.NewGcode(pword)
+			gc, err := gcodeFactory.NewUnaddressableGcode(pword)
 			if err != nil {
 				return nil, err
 			}
@@ -318,68 +320,72 @@ loop:
 	if len(gcodes) == 1 {
 
 		ww := gcodes[0].Word()
-		if ww.String() == "N" {
+		if ww == 'N' {
 
 			//convert
-			var ln *gcode.GcodeAddressable[uint32]
-			var ln2 *gcode.GcodeAddressable[int32]
+			var ln gcode.AddresableGcoder[uint32]
+			var ln2 gcode.AddresableGcoder[int32]
 			var ok bool
-			if ln2, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
+			if ln2, ok = gcodes[0].(gcode.AddresableGcoder[int32]); !ok {
 				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it")
 			}
 
-			ln, _ = gcode.NewGcodeAddressable('N', uint32(ln2.Address().Value()))
+			ln, _ = gcodeFactory.NewAddressableGcodeUint32('N', uint32(ln2.Address()))
 
 			b = &Block{
-				lineNumber: ln,
-				command:    nil,
-				parameters: nil,
-				checksum:   nil,
-				comment:    "",
-				hash:       checksum,
+				lineNumber:   ln,
+				command:      nil,
+				parameters:   nil,
+				checksum:     nil,
+				comment:      "",
+				hash:         checksum,
+				gcodeFactory: gcodeFactory,
 			}
 
 		} else {
 			b = &Block{
-				lineNumber: nil,
-				command:    gcodes[0],
-				parameters: nil,
-				checksum:   nil,
-				comment:    "",
-				hash:       checksum,
+				lineNumber:   nil,
+				command:      gcodes[0],
+				parameters:   nil,
+				checksum:     nil,
+				comment:      "",
+				hash:         checksum,
+				gcodeFactory: gcodeFactory,
 			}
 		}
 	} else {
 		ww := gcodes[0].Word()
-		if ww.String() == "N" {
+		if ww == 'N' {
 
 			//convert
-			var ln *gcode.GcodeAddressable[uint32]
-			var ln2 *gcode.GcodeAddressable[int32]
+			var ln gcode.AddresableGcoder[uint32]
+			var ln2 gcode.AddresableGcoder[int32]
 			var ok bool
-			if ln2, ok = gcodes[0].(*gcode.GcodeAddressable[int32]); !ok {
+			if ln2, ok = gcodes[0].(gcode.AddresableGcoder[int32]); !ok {
 				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it: %v %v", ok, gcodes[0])
 			}
 
-			ln, _ = gcode.NewGcodeAddressable('N', uint32(ln2.Address().Value()))
+			ln, _ = gcodeFactory.NewAddressableGcodeUint32('N', uint32(ln2.Address()))
 
 			b = &Block{
-				lineNumber: ln,
-				command:    gcodes[1],
-				parameters: gcodes[2:], //out of index warning
-				checksum:   nil,
-				comment:    "",
-				hash:       checksum,
+				lineNumber:   ln,
+				command:      gcodes[1],
+				parameters:   gcodes[2:], //out of index warning
+				checksum:     nil,
+				comment:      "",
+				hash:         checksum,
+				gcodeFactory: gcodeFactory,
 			}
 
 		} else {
 			b = &Block{
-				lineNumber: nil,
-				command:    gcodes[0],
-				parameters: gcodes[1:],
-				checksum:   nil,
-				comment:    "",
-				hash:       checksum,
+				lineNumber:   nil,
+				command:      gcodes[0],
+				parameters:   gcodes[1:],
+				checksum:     nil,
+				comment:      "",
+				hash:         checksum,
+				gcodeFactory: gcodeFactory,
 			}
 		}
 	}
