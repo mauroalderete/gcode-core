@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mauroalderete/gcode-cli/block/internal/gcodefactory"
 	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
@@ -218,6 +219,10 @@ func (b *Block) ToLineWithCheckAndComments() string {
 func Parse(s string, checksum hash.Hash, gcodeFactory gcode.GcoderFactory) (*Block, error) {
 
 	pblock := prepareSourceToParse(s)
+
+	if gcodeFactory == nil {
+		gcodeFactory = &gcodefactory.GcodeFactory{}
+	}
 
 	const separator = ' '
 

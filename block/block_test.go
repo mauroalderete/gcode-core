@@ -4,69 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mauroalderete/gcode-cli/block/internal/gcodefactory"
 	"github.com/mauroalderete/gcode-cli/checksum"
 	"github.com/mauroalderete/gcode-cli/gcode"
-	"github.com/mauroalderete/gcode-cli/gcode/addressablegcode"
-	"github.com/mauroalderete/gcode-cli/gcode/unaddressablegcode"
 )
-
-//#region Mocks
-type mockGcodeFactory struct{}
-
-func (g *mockGcodeFactory) NewUnaddressableGcode(word byte) (gcode.Gcoder, error) {
-	ng, err := unaddressablegcode.New(word)
-	if err != nil {
-		return nil, err
-	}
-
-	return ng, nil
-}
-
-func (g *mockGcodeFactory) NewAddressableGcodeUint32(word byte, address uint32) (gcode.AddresableGcoder[uint32], error) {
-
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
-
-	return ng, nil
-}
-
-func (g *mockGcodeFactory) NewAddressableGcodeInt32(word byte, address int32) (gcode.AddresableGcoder[int32], error) {
-
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
-
-	return ng, nil
-}
-
-func (g *mockGcodeFactory) NewAddressableGcodeFloat32(word byte, address float32) (gcode.AddresableGcoder[float32], error) {
-
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
-
-	return ng, nil
-}
-
-func (g *mockGcodeFactory) NewAddressableGcodeString(word byte, address string) (gcode.AddresableGcoder[string], error) {
-
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
-
-	return ng, nil
-}
-
-//#endregion
 
 func TestParse(t *testing.T) {
 
-	gcodeFactory := &mockGcodeFactory{}
+	gcodeFactory := &gcodefactory.GcodeFactory{}
 
 	t.Run("valid", func(t *testing.T) {
 		var cases = [1]struct {
@@ -96,7 +41,7 @@ func TestParse(t *testing.T) {
 
 func TestBlockFields(t *testing.T) {
 
-	gcodeFactory := &mockGcodeFactory{}
+	gcodeFactory := &gcodefactory.GcodeFactory{}
 
 	var cases = [1]struct {
 		source string
@@ -139,7 +84,7 @@ func TestBlockFields(t *testing.T) {
 
 func TestBlockChecksumUpdate(t *testing.T) {
 
-	gcodeFactory := &mockGcodeFactory{}
+	gcodeFactory := &gcodefactory.GcodeFactory{}
 
 	cases := []struct {
 		line     string
@@ -175,7 +120,7 @@ func TestBlockChecksumUpdate(t *testing.T) {
 
 func TestBlockChecksumVerify(t *testing.T) {
 
-	gcodeFactory := &mockGcodeFactory{}
+	gcodeFactory := &gcodefactory.GcodeFactory{}
 
 	cases := []struct {
 		line     string
