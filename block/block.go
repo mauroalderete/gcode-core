@@ -207,7 +207,62 @@ func (b *Block) ToLineWithCheckAndComments() string {
 	return line
 }
 
+func (b *Block) setChecksum(checksum hash.Hash) error {
+	if checksum == nil {
+		return fmt.Errorf("checksum nil should not be stored in block %v", b.String())
+	}
+	b.hash = checksum
+	return nil
+}
+
+func (b *Block) setGcodeFactory(gcodeFactory gcode.GcoderFactory) error {
+	if gcodeFactory == nil {
+		return fmt.Errorf("gcodeFactory nil should not be stored in block %v", b.String())
+	}
+	b.gcodeFactory = gcodeFactory
+	return nil
+}
+
 //#endregion
+
+//#region constructor
+
+func New(command gcode.Gcoder, options ...BlockConfigurerCallback) (*Block, error) {
+
+	if command == nil {
+		return nil, fmt.Errorf("command parameter is required")
+	}
+
+	b := &Block{
+		command: command,
+	}
+
+	config := &BlockConfigurationParameter{}
+
+	for indexOption, option := range options {
+		fmt.Printf("option(%d) =>\n", indexOption)
+		err := option(config)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't apply configuration: %w", err)
+		}
+		fmt.Printf("\tinvoked ok\n")
+		fmt.Printf("\tconfig stored: %v\n", config)
+
+		for indexAction, action := range config.configurationCallbacks {
+			fmt.Printf("\t\taction(%d): %s\n", indexAction, b)
+			err := action(b)
+			if err != nil {
+				return nil, fmt.Errorf("failed to process configuration: %w", err)
+			}
+			fmt.Printf("option(%d) => action(%d): %s\n", indexOption, indexAction, b)
+		}
+	}
+
+	return b, nil
+}
+
+//#endregion
+
 //#region package functions
 
 // Parse return a new block instance using the data available in a single gcode line from gcode file
