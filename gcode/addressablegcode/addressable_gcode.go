@@ -1,3 +1,12 @@
+// addressablegcode package implements gcode.AddressableGcoder interface to model a gcode with an address element.
+//
+// Define a Gcode struct that implement gcode.AddressableGcoder interface.
+// This struct contain a word field to store the word value and an address field to store the addres value.
+//
+// Like AddressableGcoder interface, this Gcode struct use generics with the restrictions defined by AddressType.
+//
+// A "New" constructor method allow to instance new Gcode[T] object.
+// This method use some internal rules combined with gcode.IsValidWord to validate the inputs before create any instance
 package addressablegcode
 
 import (
@@ -10,16 +19,21 @@ import (
 
 //#region gcode addressable struct
 
-// Gcode struct that implements GcodeAddresser interface
+// Gcode struct that implements GcodeAddresser interface.
 //
-// Is composed of a gcode struct and includes an address field to store an address instance
+// Is composed of a gcode struct and includes an address field to store an address instance.
 type Gcode[T gcode.AddressType] struct {
+	//Gcoder (via embedded gcode.Gcoder interface)
 	gcode.Gcoder
-	word    byte
+
+	// word stores the word value of the gcode that we are modeling
+	word byte
+
+	// address stores the address value of the gcode that we are modeling
 	address T
 }
 
-// Value return the value of the address
+// Address return the value of the address
 func (g *Gcode[T]) Address() T {
 	return g.address
 }
@@ -27,7 +41,7 @@ func (g *Gcode[T]) Address() T {
 // Compare allows checking if the current entity is equal to a Gcoder input
 //
 // This method is executed when to be called from a Gcode instance or a Gcoder instance that contains a reference to a Gcode object.
-// If the input Gcoder does not implement some gcode.Addressable data type then it returns false
+// If the input Gcoder does not implement some addressablegcode.Gcode[T] data type then it returns false
 func (g *Gcode[T]) Compare(gcode gcode.Gcoder) bool {
 
 	if gca, ok := gcode.(*Gcode[T]); ok && gca != nil {
@@ -45,10 +59,10 @@ func (g *Gcode[T]) HasAddress() bool {
 	return true
 }
 
-// SetValue allow to store a new value
+// SetAddress allow to store a new value
 //
 // If the address data type is string then the new value is verified.
-// If it doesn't satisfy the a string format then SetValue returns an error.
+// If it doesn't satisfy the a string format then SetAddress returns an error.
 func (g *Gcode[T]) SetAddress(address T) error {
 
 	if ok, err := isGenericValueAnStringAddressValid(address); ok {
@@ -84,6 +98,9 @@ func (g *Gcode[T]) Word() byte {
 //#endregion
 //#region package constructor
 
+// New return a new Gcode[T] instance or error if some inputs are invalids
+// word is the letter that compose the gcode
+// address is the value of the gcode
 func New[T gcode.AddressType](word byte, address T) (*Gcode[T], error) {
 	// Try instace Word struct
 	err := gcode.IsValidWord(word)
@@ -112,22 +129,22 @@ func New[T gcode.AddressType](word byte, address T) (*Gcode[T], error) {
 // Return an error if s string is invalid.
 //
 // Return nil if s string satisfies the format of address value of string data type.
-func isAddressStringValid(s string) error {
-	if len(s) <= 1 {
-		return fmt.Errorf("gcode address string is too short: %v", s)
+func isAddressStringValid(address string) error {
+	if len(address) <= 1 {
+		return fmt.Errorf("gcode address string is too short: %v", address)
 	}
 
-	if strings.ContainsAny(s, "\t\n\r") {
-		return fmt.Errorf("gcode address string contains invalid chars: %v", s)
+	if strings.ContainsAny(address, "\t\n\r") {
+		return fmt.Errorf("gcode address string contains invalid chars: %v", address)
 	}
 
-	if !(s[0] == '"' && s[len(s)-1] == '"') {
-		return fmt.Errorf("gcode address string isn't enclosed in quotes: %v", s)
+	if !(address[0] == '"' && address[len(address)-1] == '"') {
+		return fmt.Errorf("gcode address string isn't enclosed in quotes: %v", address)
 	}
 
-	for _, v := range strings.Split(s[1:len(s)-1], "\"\"") {
+	for _, v := range strings.Split(address[1:len(address)-1], "\"\"") {
 		if strings.ContainsRune(v, '"') {
-			return fmt.Errorf("gcode address string hasn't a valid use of the quotes: %v", s)
+			return fmt.Errorf("gcode address string hasn't a valid use of the quotes: %v", address)
 		}
 	}
 

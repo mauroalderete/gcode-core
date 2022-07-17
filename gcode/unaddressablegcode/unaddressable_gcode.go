@@ -1,3 +1,10 @@
+// unaddressablegcode package implements gcode.Gcoder interface to model a gcode without address element.
+//
+// Define a Gcode struct that implement gcode.Gcoder interface.
+// This struct contain a word field to store the word value.
+//
+// A "New" constructor method allow to instance new Gcode objects.
+// This method use gcode.IsValidWord to validate the input before create any instance
 package unaddressablegcode
 
 import (
@@ -6,9 +13,6 @@ import (
 	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
-//#region interfaces
-
-//#endregion
 //#region gcode struct
 
 // Gcode struct model a gcode expression with a stand-alone word.
@@ -55,13 +59,11 @@ func (g *Gcode) Word() byte {
 //#endregion
 //#region constructor
 
-// NewGcode is the constructor to instance a Gcode struct that includes an address.
+// New is the constructor to instance a Gcode struct that does not include an address.
 //
-// Receive a word that represents the letter of the command and another value that represent the address of gcode.
+// Receive a word that represents the letter of the command.
 //
-// The value can be string, int32 or float 32 data type.
-//
-// In any case, this method will verify the format of both parameters and return nil with an error description if necessary.
+// Return nil with an error description of something is bad.
 func New(word byte) (*Gcode, error) {
 	err := gcode.IsValidWord(word)
 	if err != nil {

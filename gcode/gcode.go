@@ -12,72 +12,93 @@
 //
 // For example, an X coordinate can take integers (X175) or fractionals (X17.62).
 //
-// gcode package implements two constructor methods to instantiate a Gcode struct or a GcodeAddressable struct.
+// The address model allows store and management the representation of the part assigned to the value of a gcode.
 //
-// One of them is used to model a gcode with a stand-alone word.
+// A gcode can have or doesn't have an address. When it has, the address must be of either int32, uin32, float32 or string data type.
+// This package contains a constructor that returns an address of some of these data types defined by the AddressType interface.
+//
+// gcode package define a series of interfaces to implement mainly two kind gcode structs.
+//
+// Gcoder interface is used to model a gcode with a stand-alone word.
 // Is said, allows to get a gcode without an address component.
 //
-// The other method is a generic method that allows constructing a typical gcode object but, also,
+// AddressableGcoder interfaces, join to AddressType interface, allows constructing a typical gcode object but, also,
 // includes an address struct of the data type defined by the AddressType interface in the address package.
-// This constructor we allow to get a gcode with a string address, or address int32 or address float32.
+// This we allow to handle a gcode with a string address, address int32, address uint32 or address float32.
 //
-// All gcode types implement a Gcoder interface.
-// Instead, the gcodes that contain an address implement the GcodeAddresser interface.
+// AddressableGcoder interface wrap Gcoder interface.
+// This means, that all the AddressableGcoder objects are as well Gcoder objects.
 //
-// GcodeAddresser interface wrap Gcoder interface.
-// This means, that all the GcodeAddresser objects are as well Gcoder objects.
-//
-// The word model represents the letter of a gcode command that identifies a single action or a parameter.
-//
-// The words consist of a simple struct that implements a single value string. This value is a letter according to specification to gcode.
-// Each word contains a single letter in uppercase. Each one of them can come accompanied by an address or not,
-// or it needs other gcodes that give more information in the form of parameters.
+// All Gcoder instances implement a word model to represent the letter of a gcode command that identifies a single action or a parameter.
+// The Word method allow get a byte that represent this command of gcode.
+// This value is a letter in uppercase according to specification to gcode.
+// Each one of them can come accompanied by an address or not,
 //
 // Exist, different classes the words, some are commands and others are used likes parameters for the commands.
 //
-// The address model allows store and management the representation of the part assigned to the value of a gcode.
+// An address struct that implement AddressableGcoder is bound with a series of methods that allow you to operate with the value of the address.
 //
-// A gcode can have or doesn't have an address. When it has, the address must be of either int32, float32 or string data type.
-// This package contains a constructor that returns an address of some of these data types defined by the AddressType interface.
+// Foremor, gcode package includes GcoderFactory.
+// It is a interace that contains some methods that return a new Gcoder instance or a new AddressableGcoder instance.
 //
-// An address struct is bound with a series of methods and functions that allow you to operate with the value of the address.
+// gcode package provides two packages that implement all interfaces ready to use.
 package gcode
 
 import "fmt"
 
-// Gcoder interface allows getting the word that gives meaning to the gcode and knowing if includes an address or not
+//#region interfaces
+
+// Gcoder interface allows getting the word that gives meaning to the gcode and knowing if includes an address or not.
 type Gcoder interface {
+	// Stringer (via the embedded fmt.Stringer interface) return the Gcoder value in string format.
 	fmt.Stringer
 
+	// Compare allows comparing the values of the current Gcoder with another.
 	Compare(Gcoder) bool
+
+	// HasAddress indicates if the current Gcoder has address element or not.
 	HasAddress() bool
+
+	// Word returns the word value that defines the gcode.
 	Word() byte
 }
 
-// AddressType interface defines the restriction type used as type generic to Address model
+// AddressType interface defines the restriction type used as type generic to Address model.
+// The address can be numeric or some cases strings.
+// The numeric values supported changes depending on the word value.
 type AddressType interface {
 	string | int32 | float32 | uint32
 }
 
-type AddresableGcoder[T AddressType] interface {
-	fmt.Stringer
+// AddressableGcoder compose the Gcoder interface and add methods to handle the address value.
+type AddressableGcoder[T AddressType] interface {
+	// Gcoder (via the embedded gcode.Gcoder interface) allow converts AddressableGcoder in a Gcoder element.
 	Gcoder
 
+	// Address return addres value of the data type T.
 	Address() T
+
+	// SetAddress stores addres value of the data type T.
+	// Return an error if the format the value is not valid.
 	SetAddress(value T) error
 }
 
+// GcoderFactory defines constructors to instance each kind of gcode object.
 type GcoderFactory interface {
+	// Create a Gcoder instance that not use address element.
 	NewUnaddressableGcode(word byte) (Gcoder, error)
-	NewAddressableGcodeUint32(word byte, address uint32) (AddresableGcoder[uint32], error)
-	NewAddressableGcodeInt32(word byte, address int32) (AddresableGcoder[int32], error)
-	NewAddressableGcodeFloat32(word byte, address float32) (AddresableGcoder[float32], error)
-	NewAddressableGcodeString(word byte, address string) (AddresableGcoder[string], error)
+
+	// Create a AddressableGcoder instance of a specific type.
+	NewAddressableGcodeUint32(word byte, address uint32) (AddressableGcoder[uint32], error)
+	NewAddressableGcodeInt32(word byte, address int32) (AddressableGcoder[int32], error)
+	NewAddressableGcodeFloat32(word byte, address float32) (AddressableGcoder[float32], error)
+	NewAddressableGcodeString(word byte, address string) (AddressableGcoder[string], error)
 }
 
+//#endregion
 //#region package functions
 
-// isValid allow knowledge if a potential word value contains a value valid according to a specification gcode.
+// IsValid allow knowledge if a potential word value contains a value valid according to a specification gcode.
 //
 // The set valid values are hard coding and they correspond to a [ReRap documentation].
 //

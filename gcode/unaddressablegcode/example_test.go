@@ -2,6 +2,7 @@ package unaddressablegcode_test
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/mauroalderete/gcode-cli/gcode/unaddressablegcode"
 )
@@ -16,6 +17,23 @@ func ExampleNew() {
 
 	fmt.Printf("%s", gc)
 	// Output: X
+}
+
+func ExampleGcode_Compare() {
+
+	gcode, err := unaddressablegcode.New('X')
+	if err != nil {
+		log.Fatalf("failed to instance gcode: %v", err)
+	}
+
+	another, err := unaddressablegcode.New('M')
+	if err != nil {
+		log.Fatalf("failed to instance another gcode: %v", err)
+	}
+
+	fmt.Printf("Are gcode and another gcode equals? %v\n", gcode.Compare(another))
+
+	// Output: Are gcode and another gcode equals? false
 }
 
 func ExampleGcode_HasAddress() {
