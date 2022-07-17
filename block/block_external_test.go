@@ -1,139 +1,127 @@
 package block_test
 
-import (
-	"fmt"
-	"log"
-	"testing"
+////#region Mocks
 
-	"github.com/mauroalderete/gcode-cli/block"
-	"github.com/mauroalderete/gcode-cli/checksum"
-	"github.com/mauroalderete/gcode-cli/gcode"
-	"github.com/mauroalderete/gcode-cli/gcode/addressablegcode"
-	"github.com/mauroalderete/gcode-cli/gcode/unaddressablegcode"
-)
+// type mockGcodeFactory struct{}
 
-//#region Mocks
+// // NewGcode is the constructor to instance a Gcode struct.
+// //
+// // Receive a word that represents the letter of the command of a gcode.
+// //
+// // If the word is an unknown symbol it returns nil with an error description.
+// func (g *mockGcodeFactory) NewUnaddressableGcode(word byte) (gcode.Gcoder, error) {
+// 	ng, err := unaddressablegcode.New(word)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-type mockGcodeFactory struct{}
+// 	return ng, nil
+// }
 
-// NewGcode is the constructor to instance a Gcode struct.
-//
-// Receive a word that represents the letter of the command of a gcode.
-//
-// If the word is an unknown symbol it returns nil with an error description.
-func (g *mockGcodeFactory) NewUnaddressableGcode(word byte) (gcode.Gcoder, error) {
-	ng, err := unaddressablegcode.New(word)
-	if err != nil {
-		return nil, err
-	}
+// func (g *mockGcodeFactory) NewAddressableGcodeUint32(word byte, address uint32) (gcode.AddresableGcoder[uint32], error) {
 
-	return ng, nil
-}
+// 	ng, err := addressablegcode.New(word, address)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-func (g *mockGcodeFactory) NewAddressableGcodeUint32(word byte, address uint32) (gcode.AddresableGcoder[uint32], error) {
+// 	return ng, nil
+// }
 
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
+// func (g *mockGcodeFactory) NewAddressableGcodeInt32(word byte, address int32) (gcode.AddresableGcoder[int32], error) {
 
-	return ng, nil
-}
+// 	ng, err := addressablegcode.New(word, address)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-func (g *mockGcodeFactory) NewAddressableGcodeInt32(word byte, address int32) (gcode.AddresableGcoder[int32], error) {
+// 	return ng, nil
+// }
 
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
+// func (g *mockGcodeFactory) NewAddressableGcodeFloat32(word byte, address float32) (gcode.AddresableGcoder[float32], error) {
 
-	return ng, nil
-}
+// 	ng, err := addressablegcode.New(word, address)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-func (g *mockGcodeFactory) NewAddressableGcodeFloat32(word byte, address float32) (gcode.AddresableGcoder[float32], error) {
+// 	return ng, nil
+// }
 
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
+// func (g *mockGcodeFactory) NewAddressableGcodeString(word byte, address string) (gcode.AddresableGcoder[string], error) {
 
-	return ng, nil
-}
+// 	ng, err := addressablegcode.New(word, address)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-func (g *mockGcodeFactory) NewAddressableGcodeString(word byte, address string) (gcode.AddresableGcoder[string], error) {
+// 	return ng, nil
+// }
 
-	ng, err := addressablegcode.New(word, address)
-	if err != nil {
-		return nil, err
-	}
+// //#endregion
 
-	return ng, nil
-}
+// func TestNew(t *testing.T) {
 
-//#endregion
+// 	t.Run("prueba1", func(t *testing.T) {
 
-func TestNew(t *testing.T) {
+// 		// create a simple unaddressable gcode that will be the main command of the new block
+// 		gc, err := unaddressablegcode.New('M')
+// 		if err != nil {
+// 			t.Errorf("got error %v, want error nil", err)
+// 		}
+// 		// invoke New block package function and adding two options callbacks to configure him
+// 		b, err := block.New(gc, func(bc block.BlockConfigurer) error {
 
-	t.Run("prueba1", func(t *testing.T) {
+// 			// first option callback configures the minimal options
+// 			// adding a checksum that implement hash.Hash, used to calculate each checksum of the block
+// 			c := checksum.New()
+// 			bc.Checksum(c)
 
-		// create a simple unaddressable gcode that will be the main command of the new block
-		gc, err := unaddressablegcode.New('M')
-		if err != nil {
-			t.Errorf("got error %v, want error nil", err)
-		}
-		// invoke New block package function and adding two options callbacks to configure him
-		b, err := block.New(gc, func(bc block.BlockConfigurer) error {
+// 			// adding a mock of GcoderFactory, used internally by block to handle each gcode that its composed.
+// 			gcf := &mockGcodeFactory{}
+// 			bc.GcodeFactory(gcf)
 
-			// first option callback configures the minimal options
-			// adding a checksum that implement hash.Hash, used to calculate each checksum of the block
-			c := checksum.New()
-			bc.Checksum(c)
+// 			// adding a line number gcode to indexer this new block
+// 			gcn, err := addressablegcode.New[uint32]('N', 100)
+// 			if err != nil {
+// 				t.Errorf("failed to create lineNumber gcode: got error %v, want error nil", err)
+// 			}
 
-			// adding a mock of GcoderFactory, used internally by block to handle each gcode that its composed.
-			gcf := &mockGcodeFactory{}
-			bc.GcodeFactory(gcf)
+// 			fmt.Println("linenumber: ", gcn)
+// 			bc.LineNumber(gcn)
+// 			return nil
 
-			// adding a line number gcode to indexer this new block
-			gcn, err := addressablegcode.New[uint32]('N', 100)
-			if err != nil {
-				t.Errorf("failed to create lineNumber gcode: got error %v, want error nil", err)
-			}
+// 		}, func(bc block.BlockConfigurer) error {
+// 			// the second option callback try used a new configuration option to set the slice the gcode parameters
 
-			fmt.Println("linenumber: ", gcn)
-			bc.LineNumber(gcn)
-			return nil
+// 			fmt.Println("agrego parametros??")
+// 			// For this, we verify by assertion if the bc instance implement the new BlockConfigurerParameters interface
+// 			if bcp, ok := bc.(block.BlockConfigurerParameters); ok {
+// 				// If is true then we can invoke the Parameters method to adding a slice of Gcoder
+// 				fmt.Println("yes! agrego parametros")
+// 				gc1, err := unaddressablegcode.New('X')
+// 				if err != nil {
+// 					log.Fatal("Oops!")
+// 				}
+// 				gc2, err := unaddressablegcode.New('Y')
+// 				if err != nil {
+// 					log.Fatal("Oops!")
+// 				}
+// 				gc3, err := unaddressablegcode.New('Z')
+// 				if err != nil {
+// 					log.Fatal("Oops!")
+// 				}
+// 				bcp.Parameters([]gcode.Gcoder{gc1, gc2, gc3})
+// 			} else {
+// 				return fmt.Errorf("Ups, failed loading parameters at new block: BlockConfigurer not implement BlockConfigurerParameters yet")
+// 			}
+// 			return nil
+// 		})
 
-		}, func(bc block.BlockConfigurer) error {
-			// the second option callback try used a new configuration option to set the slice the gcode parameters
+// 		if err != nil {
+// 			log.Fatal("Oops! x2")
+// 		}
 
-			fmt.Println("agrego parametros??")
-			// For this, we verify by assertion if the bc instance implement the new BlockConfigurerParameters interface
-			if bcp, ok := bc.(block.BlockConfigurerParameters); ok {
-				// If is true then we can invoke the Parameters method to adding a slice of Gcoder
-				fmt.Println("yes! agrego parametros")
-				gc1, err := unaddressablegcode.New('X')
-				if err != nil {
-					log.Fatal("Oops!")
-				}
-				gc2, err := unaddressablegcode.New('Y')
-				if err != nil {
-					log.Fatal("Oops!")
-				}
-				gc3, err := unaddressablegcode.New('Z')
-				if err != nil {
-					log.Fatal("Oops!")
-				}
-				bcp.Parameters([]gcode.Gcoder{gc1, gc2, gc3})
-			} else {
-				return fmt.Errorf("Ups, failed loading parameters at new block: BlockConfigurer not implement BlockConfigurerParameters yet")
-			}
-			return nil
-		})
-
-		if err != nil {
-			log.Fatal("Oops! x2")
-		}
-
-		fmt.Println("block: ", b.ToLineWithCheckAndComments())
-	})
-}
+// 		fmt.Println("block: ", b.ToLineWithCheckAndComments())
+// 	})
+// }
