@@ -119,7 +119,7 @@ func TestNew(t *testing.T) {
 			configChecksum:   true,
 			checksum:         mockChecksum,
 			valid:            true,
-			output:           "N4 G92 E0 *67",
+			output:           "N4 G92 E0*67",
 		},
 		"+linenumber+parameters+checksum+comment": {
 			command:          mockCommand,
@@ -132,7 +132,7 @@ func TestNew(t *testing.T) {
 			configComment:    true,
 			comment:          mockComment,
 			valid:            true,
-			output:           "N4 G92 E0 *67 ;comentario",
+			output:           "N4 G92 E0*67 ;comentario",
 		},
 		"+linenumber+parameters+checksum+comment+hash": {
 			command:          mockCommand,
@@ -147,7 +147,7 @@ func TestNew(t *testing.T) {
 			configHash:       true,
 			hash:             mockHash,
 			valid:            false,
-			output:           "N4 G92 E0 *67 ;comentario",
+			output:           "N4 G92 E0*67 ;comentario",
 		},
 		"+linenumber+parameters+checksum+comment+hash+gcodeFactory": {
 			command:            mockCommand,
@@ -164,7 +164,7 @@ func TestNew(t *testing.T) {
 			configGcodeFactory: true,
 			gcodeFactory:       mockGcodeFactory,
 			valid:              true,
-			output:             "N4 G92 E0 *67 ;comentario",
+			output:             "N4 G92 E0*67 ;comentario",
 		},
 	}
 

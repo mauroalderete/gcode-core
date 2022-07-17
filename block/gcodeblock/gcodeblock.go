@@ -164,9 +164,7 @@ func (b *GcodeBlock) ToLineWithCheck() string {
 	line := b.ToLine()
 
 	if b.checksum != nil {
-		line = strings.Join([]string{
-			line,
-			b.checksum.String()}, BLOCK_SEPARATOR)
+		line = fmt.Sprintf("%s%s", line, b.checksum.String())
 	}
 
 	return line
