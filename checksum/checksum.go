@@ -54,7 +54,7 @@ func (d *digest) Write(p []byte) (n int, err error) {
 
 // New creates a new hash.Hash computing checksum using the Marlin and RepRap algorithm.
 func New() hash.Hash {
-	return &digest{0}
+	return &digest{}
 }
 
 //#endregion

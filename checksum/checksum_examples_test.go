@@ -3,7 +3,7 @@ package checksum_test
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-skew-transform-cli/pkg/checksum"
+	"github.com/mauroalderete/gcode-cli/checksum"
 )
 
 func Example() {
