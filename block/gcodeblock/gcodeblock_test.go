@@ -171,7 +171,7 @@ func TestNew(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			gb, err := New(tc.command, func(config block.BlockConfigurer) error {
+			gb, err := New(tc.command, func(config block.BlockConstructorConfigurer) error {
 
 				if tc.configLineNumber {
 					err := config.SetLineNumber(tc.lineNumber)

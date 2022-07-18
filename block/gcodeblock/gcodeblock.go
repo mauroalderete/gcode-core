@@ -205,7 +205,7 @@ func (b *GcodeBlock) ToLine(format string) string {
 // command is a gcode with address or not that define the block command.
 // options are a series of configuration callbacks to allow set different aspects of the block.
 // each option provides a config object that can be used to load the values that define the block.
-func New(command gcode.Gcoder, options ...block.BlockConfigurationCallbackable) (*GcodeBlock, error) {
+func New(command gcode.Gcoder, options ...block.BlockConstructorConfigurationCallbackable) (*GcodeBlock, error) {
 
 	// command is required
 	if command == nil {
@@ -258,7 +258,7 @@ func New(command gcode.Gcoder, options ...block.BlockConfigurationCallbackable) 
 // source is the string line to parse.
 // options are a series of configuration callbacks to allow set different aspects of the block.
 // each option provides a config object that can be used to load the values that define the block.
-func Parse(s string, options ...block.BlockConfigurationCallbackable) (*GcodeBlock, error) {
+func Parse(s string, options ...block.BlockParserConfigurationCallbackable) (*GcodeBlock, error) {
 
 	pblock := prepareSourceToParse(s)
 

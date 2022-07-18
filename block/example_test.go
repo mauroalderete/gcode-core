@@ -19,7 +19,7 @@ func ExampleBlocker() {
 	}
 
 	// try create a new block with command G1
-	b, err := gcodeblock.New(command, func(config block.BlockConfigurer) error {
+	b, err := gcodeblock.New(command, func(config block.BlockConstructorConfigurer) error {
 
 		// set line number N7
 		lineNumber, err := addressablegcode.New[uint32]('N', 7)

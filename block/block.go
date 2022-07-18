@@ -40,14 +40,21 @@ type Blocker interface {
 	VerifyChecksum() (bool, error)
 }
 
-// BlockConfigurer contains the configurable options that define a block when is constructed.
-// Allows loading of the elements that compose a block during the creation.
-//
-// A block is determined by his gcode command. The rest of the parts might are included or not.
-// Some blocks will require parameters, others not.
+// BlockConfigurer contains the basic configurable options that define a block when is constructed.
+// Allows inyect the depencies that the block require to handle gcode elements and calculate checksum.
 type BlockConfigurer interface {
 	// Set a gcode.GcodeFactory instances that the block will use to handle his internal gcode elements
 	SetGcodeFactory(gcodeFactory gcode.GcoderFactory) error
+
+	// Set the hash instance that implement the algorith to execute checksum
+	SetHash(hash hash.Hash) error
+}
+
+// BlockConstructorConfigurer extends the basic configurable options to add other parameters that define a block when is constructed.
+// Allows loading of the elements that compose a block during the creation.
+type BlockConstructorConfigurer interface {
+	// BlockConfigurer (wrap block.BlockConfigurer) add the basic configurable options requires to create a new Block.
+	BlockConfigurer
 
 	// Set a line number of the block
 	SetLineNumber(lineNumber gcode.AddressableGcoder[uint32]) error
@@ -58,17 +65,27 @@ type BlockConfigurer interface {
 	// Set the checksum value of the block
 	SetChecksum(checksum gcode.AddressableGcoder[uint32]) error
 
-	// Set the hash instance that implement the algorith to execute checksum
-	SetHash(hash hash.Hash) error
-
 	// Set the comments from the block
 	SetComment(comment string) error
+}
+
+// BlockParserConfigurer redefine the basic configurable options that define a block when is constructed.
+// Allows loading of the elements that compose a block during the creation.
+type BlockParserConfigurer interface {
+
+	// BlockConfigurer (wrap block.BlockConfigurer) add the basic configurable options requires to create a new Block from Parse string.
+	BlockConfigurer
 }
 
 // BlockConfigurationCallbackable is the signature of the callbacks that the package function New() waiting receives to configure the new block instance.
 //
 // Each callback provide a BlockConfigurer instance that implement a set of methods to configure the new block instance.
-type BlockConfigurationCallbackable func(config BlockConfigurer) error
+type BlockConstructorConfigurationCallbackable func(config BlockConstructorConfigurer) error
+
+// BlockConfigurationCallbackable is the signature of the callbacks that the package function New() waiting receives to configure the new block instance.
+//
+// Each callback provide a BlockConfigurer instance that implement a set of methods to configure the new block instance.
+type BlockParserConfigurationCallbackable func(config BlockParserConfigurer) error
 
 // BlockerFactory define the methods to create new Block instances
 type BlockerFactory interface {
@@ -77,7 +94,7 @@ type BlockerFactory interface {
 	// command is a gcode with address or not that define the block command.
 	// options are a series of configuration callbacks to allow set different aspects of the block.
 	// each option provides a config object that can be used to load the values that define the block.
-	New(command gcode.Gcoder, options ...BlockConfigurationCallbackable) (*Blocker, error)
+	New(command gcode.Gcoder, options ...BlockConstructorConfigurationCallbackable) (*Blocker, error)
 
 	// Parse returns a new block instance with the configurations we wish, from a single block line.
 	// The block line must contain the correct format, on the contrary, the parsing process will end with an error.
@@ -85,5 +102,5 @@ type BlockerFactory interface {
 	// source is the string line to parse.
 	// options are a series of configuration callbacks to allow set different aspects of the block.
 	// each option provides a config object that can be used to load the values that define the block.
-	Parse(source string, options ...BlockConfigurationCallbackable) (*Blocker, error)
+	Parse(source string, options ...BlockParserConfigurationCallbackable) (*Blocker, error)
 }
