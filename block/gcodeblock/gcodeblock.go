@@ -1,3 +1,9 @@
+// gcodeblock is an implementation of block package.
+//
+// This package define GcodeBlock struct as a implemention of block.Blocker interface.
+//
+// Furemore, it defines two package functions that allows create new instances of GcodeBlock.
+// These fucntions can be used to a any instances that implement block.BlockerFactory
 package gcodeblock
 
 import (
@@ -9,6 +15,7 @@ import (
 
 	"github.com/mauroalderete/gcode-cli/block"
 	"github.com/mauroalderete/gcode-cli/block/internal/gcodefactory"
+	"github.com/mauroalderete/gcode-cli/checksum"
 	"github.com/mauroalderete/gcode-cli/gcode"
 )
 
@@ -27,33 +34,40 @@ const (
 //
 // To be constructed using the Parse function from a line of the gcode file.
 type GcodeBlock struct {
+
 	// special gcode that store the value of the verification of the integrity of the block
-	checksum gcode.AddresableGcoder[uint32]
+	checksum gcode.AddressableGcoder[uint32]
+
 	// first gcode expression and main significance of the block. Always is present.
 	command gcode.Gcoder
+
 	// expression attached at the block with some comment. Can be empty
 	comment string
+
 	// gcode factory
 	gcodeFactory gcode.GcoderFactory
+
 	// instance of the hash algorithm to handle the checksum
 	hash hash.Hash
+
 	// line number of the block. It can be null. Always has an int32 type address.
-	lineNumber gcode.AddresableGcoder[uint32]
+	lineNumber gcode.AddressableGcoder[uint32]
+
 	// list of the rest of the gcode expression that adds information to the command. Can be empty.
 	parameters []gcode.Gcoder
 }
 
 // String returns the block exported as single-line string format including check and comments section.
 //
-// It is the same invoke ToLineWithCheckAndComments method
+// It is the same invoke ToLine method
 func (b *GcodeBlock) String() string {
-	return b.ToLineWithCheckAndComments()
+	return b.ToLine("%l %c %p")
 }
 
 // LineNumber returns a gcode addressable of the int32 type.
 //
 // Represent the line number of the block. It can be null. Always has an int32 type address.
-func (b *GcodeBlock) LineNumber() gcode.AddresableGcoder[uint32] {
+func (b *GcodeBlock) LineNumber() gcode.AddressableGcoder[uint32] {
 	return b.lineNumber
 }
 
@@ -73,18 +87,18 @@ func (b *GcodeBlock) Parameters() []gcode.Gcoder {
 
 // Checksum returns a GcodeAddressable[uint32] if the line of the block contained, else returns nil.
 //
-// Exists two methods of checking: CRC and Checksum. Actually, only Checksum is supported.
-func (b *GcodeBlock) Checksum() gcode.AddresableGcoder[uint32] {
+// The value of the address is calculated using the hash instances stored.
+func (b *GcodeBlock) Checksum() gcode.AddressableGcoder[uint32] {
 	return b.checksum
 }
 
 // CalculateChecksum calculates a checksum from the block and returns a new GcodeAddressable[uint32] with the value computed.
-func (b *GcodeBlock) CalculateChecksum() (gcode.AddresableGcoder[uint32], error) {
+func (b *GcodeBlock) CalculateChecksum() (gcode.AddressableGcoder[uint32], error) {
 
 	b.hash.Reset()
-	_, err := b.hash.Write([]byte(b.ToLine()))
+	_, err := b.hash.Write([]byte(b.String()))
 	if err != nil {
-		return nil, fmt.Errorf("failed to calculate hash to block %s: %w", b.ToLine(), err)
+		return nil, fmt.Errorf("failed to calculate hash to block %s: %w", b, err)
 	}
 
 	gc, err := b.gcodeFactory.NewAddressableGcodeUint32('*', uint32(b.hash.Sum(nil)[0]))
@@ -130,64 +144,67 @@ func (b *GcodeBlock) Comment() string {
 	return b.comment
 }
 
-// ToLine export the block as a single-line string format with minimal data for can be executed in a machine
+// ToLine export the block as a single-line string format
 //
-// The line generated depends on the content of the gcode line in the file line used to be parsed when the block was constructed.
+// format is a string that contain verbs to define the place of each element of the block.
+// The verbs available are:
 //
-// This method tries to export the line number of the block, the command and the parameters. Sometimes a block can haven't available the line number. In these cases, this is ignored.
+// %l: linenumber gcode of the block
 //
-// Sometimes a block could haven't a command (and any parameters) if the line used to parse the block didn't have either command originally.
-func (b *GcodeBlock) ToLine() string {
+// %c: command gcode of the block
+//
+// %p: series of parameters gcode of the command gcode
+//
+// %k: checksum gcode of the usefull part of the block
+//
+// %m: comments of the block
+//
+// We can used the format string to determine how each element is showing. For example:
+//
+// The line generated depends on the available of elements contained in the block.
+// If any element isn't available then is ignored.
+func (b *GcodeBlock) ToLine(format string) string {
 	var values []string
 
-	if b.lineNumber != nil {
-		values = append(values, b.lineNumber.String())
-	}
+	result := strings.ReplaceAll(format, "%c", b.Command().String())
 
-	if b.command != nil {
-		values = append(values, b.command.String())
+	if b.lineNumber != nil {
+		result = strings.ReplaceAll(result, "%l", b.LineNumber().String())
+	} else {
+		result = strings.ReplaceAll(result, "%l", "")
 	}
 
 	if b.parameters != nil {
 		for _, g := range b.parameters {
 			values = append(values, g.String())
 		}
+		if len(values) == 0 {
+			values = append(values, "")
+		}
+		result = strings.ReplaceAll(result, "%p", strings.Join(values, BLOCK_SEPARATOR))
+	} else {
+		result = strings.ReplaceAll(result, "%p", "")
 	}
-
-	return strings.Join(values, BLOCK_SEPARATOR)
-}
-
-// ToLineWithCheck exports the block as a single-line string format adding the check section.
-//
-// Use ToLine output and attach the check section if is available
-func (b *GcodeBlock) ToLineWithCheck() string {
-	line := b.ToLine()
 
 	if b.checksum != nil {
-		line = fmt.Sprintf("%s%s", line, b.checksum.String())
+		result = strings.ReplaceAll(result, "%k", b.Checksum().String())
+	} else {
+		result = strings.ReplaceAll(result, "%k", "")
 	}
 
-	return line
-}
+	result = strings.ReplaceAll(result, "%m", b.comment)
 
-// ToLineWithCheckAndComments exports the block as a single-line string format adding the check section and comment section.
-//
-// Use ToLineWithCheck output and attach the comment section if is available.
-//
-// The string output is the expression more early at the original gcode line used to parse the block
-func (b *GcodeBlock) ToLineWithCheckAndComments() string {
-	line := b.ToLineWithCheck()
-
-	if len(b.comment) > 0 {
-		line = strings.Join([]string{line, b.comment}, BLOCK_SEPARATOR)
-	}
-
-	return line
+	return strings.TrimSpace(result)
 }
 
 //#endregion
 //#region constructor
 
+// New return a new block instance with the configurations wishes.
+//
+// command is a gcode with address or not that define the block command.
+// options are a series of configuration callbacks to allow set different aspects of the block.
+// each option provides a config object that can be used to load the values that define the block.
 func New(command gcode.Gcoder, options ...block.BlockConfigurationCallbackable) (*GcodeBlock, error) {
 
 	// command is required
@@ -197,7 +214,9 @@ func New(command gcode.Gcoder, options ...block.BlockConfigurationCallbackable) 
 
 	// prepare a new GcodeBlock instance with some values by default
 	gcodeBlock := &GcodeBlock{
-		command: command,
+		command:      command,
+		gcodeFactory: &gcodefactory.GcodeFactory{},
+		hash:         checksum.New(),
 	}
 
 	// prepare an instance of the BlockConfigurer interface to store each configuration callback received
@@ -220,13 +239,11 @@ func New(command gcode.Gcoder, options ...block.BlockConfigurationCallbackable) 
 	}
 
 	// if is necesary, can validate that gcodeBlock is in valid state
-	if gcodeBlock.hash != nil {
+	if gcodeBlock.checksum != nil {
 		if ok, err := gcodeBlock.VerifyChecksum(); !ok || err != nil {
 			return gcodeBlock, fmt.Errorf("gcode block %s is invalid, checksum result is %v, error: %w ", gcodeBlock, ok, err)
 		}
 	}
-
-	// can apply post-processing, like auto-calculate the checksum
 
 	return gcodeBlock, nil
 }
@@ -235,19 +252,18 @@ func New(command gcode.Gcoder, options ...block.BlockConfigurationCallbackable) 
 
 //#region package functions
 
-// Parse return a new block instance using the data available in a single gcode line from gcode file
+// Parse returns a new block instance with the configurations we wish, from a single block line.
+// The block line must contain the correct format, on the contrary, the parsing process will end with an error.
 //
-// Recive a string that must contain a gcode line valid.
-// Try to extract each section from de block line to stores.
-//
-// Return an error if was a problem.
-func Parse(s string, checksum hash.Hash, gcodeFactory gcode.GcoderFactory) (*GcodeBlock, error) {
+// source is the string line to parse.
+// options are a series of configuration callbacks to allow set different aspects of the block.
+// each option provides a config object that can be used to load the values that define the block.
+func Parse(s string, options ...block.BlockConfigurationCallbackable) (*GcodeBlock, error) {
 
 	pblock := prepareSourceToParse(s)
 
-	if gcodeFactory == nil {
-		gcodeFactory = &gcodefactory.GcodeFactory{}
-	}
+	gcodeFactory := &gcodefactory.GcodeFactory{}
+	checksum := checksum.New()
 
 	const separator = ' '
 
@@ -353,10 +369,10 @@ loop:
 		if ww == 'N' {
 
 			//convert
-			var ln gcode.AddresableGcoder[uint32]
-			var ln2 gcode.AddresableGcoder[int32]
+			var ln gcode.AddressableGcoder[uint32]
+			var ln2 gcode.AddressableGcoder[int32]
 			var ok bool
-			if ln2, ok = gcodes[0].(gcode.AddresableGcoder[int32]); !ok {
+			if ln2, ok = gcodes[0].(gcode.AddressableGcoder[int32]); !ok {
 				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it")
 			}
 
@@ -388,10 +404,10 @@ loop:
 		if ww == 'N' {
 
 			//convert
-			var ln gcode.AddresableGcoder[uint32]
-			var ln2 gcode.AddresableGcoder[int32]
+			var ln gcode.AddressableGcoder[uint32]
+			var ln2 gcode.AddressableGcoder[int32]
 			var ok bool
-			if ln2, ok = gcodes[0].(gcode.AddresableGcoder[int32]); !ok {
+			if ln2, ok = gcodes[0].(gcode.AddressableGcoder[int32]); !ok {
 				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it: %v %v", ok, gcodes[0])
 			}
 

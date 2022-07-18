@@ -1,6 +1,7 @@
 package gcodeblock
 
 import (
+	"fmt"
 	"hash"
 	"testing"
 
@@ -43,10 +44,10 @@ func TestNew(t *testing.T) {
 	mockGcodeFactory := &gcodefactory.GcodeFactory{}
 
 	cases := map[string]struct {
-		lineNumber         gcode.AddresableGcoder[uint32]
+		lineNumber         gcode.AddressableGcoder[uint32]
 		command            gcode.Gcoder
 		parameters         []gcode.Gcoder
-		checksum           gcode.AddresableGcoder[uint32]
+		checksum           gcode.AddressableGcoder[uint32]
 		comment            string
 		hash               hash.Hash
 		gcodeFactory       gcode.GcoderFactory
@@ -146,7 +147,7 @@ func TestNew(t *testing.T) {
 			comment:          mockComment,
 			configHash:       true,
 			hash:             mockHash,
-			valid:            false,
+			valid:            true,
 			output:           "N4 G92 E0*67 ;comentario",
 		},
 		"+linenumber+parameters+checksum+comment+hash+gcodeFactory": {
@@ -208,7 +209,7 @@ func TestNew(t *testing.T) {
 				}
 
 				if tc.configHash {
-					err := config.SetChecksumGenerator(tc.hash)
+					err := config.SetHash(tc.hash)
 					if err != nil {
 						return err
 					}
@@ -227,8 +228,8 @@ func TestNew(t *testing.T) {
 					return
 				}
 
-				if gb.ToLineWithCheckAndComments() != tc.output {
-					t.Errorf("got gcodeBlock %s, want gcodeBlock: %s", gb, tc.output)
+				if gb.ToLine("%l %c %p%k %m") != tc.output {
+					t.Errorf("got gcodeBlock (%d)[%s], want gcodeBlock: (%d)[%s]", len(gb.ToLine("%l %c %p%k %m")), gb.ToLine("%l %c %p%k %m"), len(tc.output), tc.output)
 				}
 			} else {
 				if err == nil {
@@ -238,6 +239,122 @@ func TestNew(t *testing.T) {
 				if gb != nil {
 					t.Errorf("got gcodeBlock not nil, want gcodeBlock nil")
 				}
+			}
+		})
+	}
+}
+
+func TestGcodeblogk_Parameters(t *testing.T) {
+
+	var cases = [1]struct {
+		source     string
+		parameters []string
+	}{
+		{
+			source:     "N7 G1 X2.0 Y2.0 F3000.0",
+			parameters: []string{"X2.0", "Y2.0", "F3000.0"},
+		},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+			b, err := Parse(tc.source)
+			if err != nil {
+				t.Errorf("got %v, want nil error", err)
+				return
+			}
+			if b == nil {
+				t.Errorf("got nil block, want %v", tc.source)
+				return
+			}
+
+			if len(b.Parameters()) != len(tc.parameters) {
+				t.Errorf("got parameters size %d, want paramters size %d", len(b.Parameters()), len(tc.parameters))
+				return
+			}
+
+			match := true
+			for i, s := range tc.parameters {
+				if b.Parameters()[i].String() != s {
+					match = false
+					break
+				}
+			}
+
+			if !match {
+				t.Errorf("got %v, want %v", b.ToLine("%p"), tc.parameters)
+			}
+		})
+	}
+
+}
+
+func TestGcodeblogk_Calculate(t *testing.T) {
+
+	var cases = [1]struct {
+		source        string
+		checksumValue uint32
+	}{
+		{
+			source:        "N7 G1 X2.0 Y2.0 F3000.0",
+			checksumValue: 85,
+		},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+			b, err := Parse(tc.source)
+			if err != nil {
+				t.Errorf("got %v, want nil error", err)
+				return
+			}
+			if b == nil {
+				t.Errorf("got nil block, want %v", tc.source)
+				return
+			}
+
+			gc, err := b.CalculateChecksum()
+			if err != nil {
+				t.Errorf("got error %v, want error nil", err)
+				return
+			}
+
+			if gc.Address() != tc.checksumValue {
+				t.Errorf("got checksum value %d, want checksum value %d", gc.Address(), tc.checksumValue)
+			}
+		})
+	}
+}
+
+func TestGcodeblogk_Verify(t *testing.T) {
+
+	var cases = [1]struct {
+		source string
+		err    bool
+		ok     bool
+	}{
+		{
+			source: "N7 G1 X2.0 Y2.0 F3000.0",
+			err:    true,
+			ok:     false,
+		},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("(%v)", i), func(t *testing.T) {
+			b, err := Parse(tc.source)
+			if err != nil {
+				t.Errorf("got %v, want nil error", err)
+				return
+			}
+			if b == nil {
+				t.Errorf("got nil block, want %v", tc.source)
+				return
+			}
+
+			ok, err := b.VerifyChecksum()
+			if ok != tc.ok || (err != nil) != tc.err {
+				t.Errorf("got error %v verified %v, want error %v verified %v", err, ok, tc.err, tc.ok)
 			}
 		})
 	}
