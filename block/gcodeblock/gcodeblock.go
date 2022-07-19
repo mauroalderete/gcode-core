@@ -230,14 +230,6 @@ func New(command gcode.Gcoder, options ...block.BlockConstructorConfigurationCal
 		}
 	}
 
-	// apply each configuration callback that modify the new gcodeBlock instance
-	for _, action := range configurator.configurationCallbacks {
-		err := action(gcodeBlock)
-		if err != nil {
-			return nil, fmt.Errorf("failed to apply configuration: %w", err)
-		}
-	}
-
 	// if is necesary, can validate that gcodeBlock is in valid state
 	if gcodeBlock.checksum != nil {
 		if ok, err := gcodeBlock.VerifyChecksum(); !ok || err != nil {
@@ -260,183 +252,198 @@ func New(command gcode.Gcoder, options ...block.BlockConstructorConfigurationCal
 // each option provides a config object that can be used to load the values that define the block.
 func Parse(s string, options ...block.BlockParserConfigurationCallbackable) (*GcodeBlock, error) {
 
-	pblock := prepareSourceToParse(s)
-
 	gcodeFactory := &gcodefactory.GcodeFactory{}
-	checksum := checksum.New()
+	hashGenerator := checksum.New()
 
-	const separator = ' '
-
-	var gcodes []gcode.Gcoder
-	var i int = 0
-
-loop:
-	for {
-		if i <= -1 {
-			break loop
-		}
-		if len(pblock) == 0 {
-			break loop
-		}
-		i = strings.IndexRune(pblock, separator)
-
-		if i == 0 {
-			pblock = pblock[1:]
-			continue
-		}
-
-		var pgcode string = ""
-		var pword byte
-		var paddress string = ""
-
-		if i <= -1 {
-			pgcode = pblock
-			pword = pgcode[0]
-		} else {
-			pgcode = pblock[:i]
-			pword = pgcode[0]
-		}
-
-		if len(pgcode) > 1 {
-			paddress = pgcode[1:]
-		}
-
-		if len(pgcode) > 1 {
-			var gca gcode.Gcoder
-			//tiene address
-			//es int?
-			valueInt, err := strconv.ParseInt(paddress, 10, 32)
-			if err == nil {
-				gca, err = gcodeFactory.NewAddressableGcodeInt32(pword, int32(valueInt))
-				if err != nil {
-					return nil, err
-				}
-				gcodes = append(gcodes, gca)
-				if i <= -1 {
-					break loop
-				}
-				pblock = pblock[i:]
-				continue
-			}
-
-			//es float?
-			valueFloat, err := strconv.ParseFloat(paddress, 32)
-			if err == nil {
-				gca, err = gcodeFactory.NewAddressableGcodeFloat32(pword, float32(valueFloat))
-				if err != nil {
-					return nil, err
-				}
-				gcodes = append(gcodes, gca)
-				if i <= -1 {
-					break loop
-				}
-				pblock = pblock[i:]
-				continue
-			}
-
-			//asumo string
-			gca, err = gcodeFactory.NewAddressableGcodeString(pword, paddress)
-			if err != nil {
-				return nil, err
-			}
-			gcodes = append(gcodes, gca)
-			if i <= -1 {
-				break loop
-			}
-			pblock = pblock[i:]
-			continue
-		} else {
-			gc, err := gcodeFactory.NewUnaddressableGcode(pword)
-			if err != nil {
-				return nil, err
-			}
-			gcodes = append(gcodes, gc)
-			if i <= -1 {
-				break loop
-			}
-		}
-		if i <= -1 {
-			break loop
-		}
-		pblock = pblock[i:]
+	gcodeBlock := &GcodeBlock{
+		gcodeFactory: gcodeFactory,
+		hash:         hashGenerator,
 	}
 
-	var b *GcodeBlock
+	// prepare an instance of the BlockConfigurer interface to store each configuration callback received
+	configurator := &blockConfigurator{}
 
-	if len(gcodes) == 1 {
-
-		ww := gcodes[0].Word()
-		if ww == 'N' {
-
-			//convert
-			var ln gcode.AddressableGcoder[uint32]
-			var ln2 gcode.AddressableGcoder[int32]
-			var ok bool
-			if ln2, ok = gcodes[0].(gcode.AddressableGcoder[int32]); !ok {
-				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it")
-			}
-
-			ln, _ = gcodeFactory.NewAddressableGcodeUint32('N', uint32(ln2.Address()))
-
-			b = &GcodeBlock{
-				lineNumber:   ln,
-				command:      nil,
-				parameters:   nil,
-				checksum:     nil,
-				comment:      "",
-				hash:         checksum,
-				gcodeFactory: gcodeFactory,
-			}
-
-		} else {
-			b = &GcodeBlock{
-				lineNumber:   nil,
-				command:      gcodes[0],
-				parameters:   nil,
-				checksum:     nil,
-				comment:      "",
-				hash:         checksum,
-				gcodeFactory: gcodeFactory,
-			}
+	// call each options to load configurations callback at configurator instance
+	for _, option := range options {
+		err := option(configurator)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load configuration: %w", err)
 		}
-	} else {
-		ww := gcodes[0].Word()
-		if ww == 'N' {
 
-			//convert
-			var ln gcode.AddressableGcoder[uint32]
-			var ln2 gcode.AddressableGcoder[int32]
-			var ok bool
-			if ln2, ok = gcodes[0].(gcode.AddressableGcoder[int32]); !ok {
-				return nil, fmt.Errorf("line number gcode found, but it was not possible to parse it: %v %v", ok, gcodes[0])
-			}
-
-			ln, _ = gcodeFactory.NewAddressableGcodeUint32('N', uint32(ln2.Address()))
-
-			b = &GcodeBlock{
-				lineNumber:   ln,
-				command:      gcodes[1],
-				parameters:   gcodes[2:], //out of index warning
-				checksum:     nil,
-				comment:      "",
-				hash:         checksum,
-				gcodeFactory: gcodeFactory,
-			}
-
-		} else {
-			b = &GcodeBlock{
-				lineNumber:   nil,
-				command:      gcodes[0],
-				parameters:   gcodes[1:],
-				checksum:     nil,
-				comment:      "",
-				hash:         checksum,
-				gcodeFactory: gcodeFactory,
+		// apply each configuration callback that modify the new gcodeBlock instance
+		for _, action := range configurator.configurationCallbacks {
+			err := action(gcodeBlock)
+			if err != nil {
+				return nil, fmt.Errorf("failed to apply configuration: %w", err)
 			}
 		}
 	}
 
-	return b, nil
+	//i can use gcodeFactory to instance each gcode available into string
+
+	parse := prepareSourceToParse(s)
+	// parseByte := []byte(parse)
+
+	var element elementTaken
+	var err error
+
+	// recover comments value if is exist
+	element, err = take(parse, `\s*;.*$`)
+	if err != nil {
+		return nil, err
+	}
+	if element.taken != "" {
+		gcodeBlock.comment = element.taken
+		parse = strings.TrimSpace(element.remainder)
+	}
+	fmt.Printf("parse after comment parsed: [%s]\n", parse)
+
+	// recover linenumber value if is exist
+	element, err = take(parse, `^N\d+`)
+	fmt.Printf("taken linenumber: %v\n", element)
+	if err != nil {
+		return nil, err
+	}
+	if element.taken != "" {
+		address, err := strconv.ParseInt(element.taken[1:], 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("try parse Linenumber %v: %w", element.taken, err)
+		}
+		gcode, err := gcodeBlock.gcodeFactory.NewAddressableGcodeUint32('N', uint32(address))
+		if err != nil {
+			return nil, fmt.Errorf("try generate Linenumber gcode: %w", err)
+		}
+		gcodeBlock.lineNumber = gcode
+		parse = strings.TrimSpace(element.remainder)
+	}
+	fmt.Printf("parse after linenumber parsed: [%s]\n", parse)
+
+	// recover checksum value if is exist
+	element, err = take(parse, `\b\*\d+$`)
+	fmt.Printf("taken checksum: %v\n", element)
+	if err != nil {
+		return nil, err
+	}
+	if element.taken != "" {
+		address, err := strconv.ParseInt(element.taken[1:], 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("try parse checksum %v: %w", element.taken, err)
+		}
+		gcode, err := gcodeBlock.gcodeFactory.NewAddressableGcodeUint32('*', uint32(address))
+		if err != nil {
+			return nil, fmt.Errorf("try generate checksum gcode: %w", err)
+		}
+		gcodeBlock.checksum = gcode
+		parse = strings.TrimSpace(element.remainder)
+	}
+	fmt.Printf("parse after checksum parsed: [%s]\n", parse)
+
+	// prepare parse gcodes
+	quoteRegex := regexp.MustCompile(`(?U)""`)
+	quoteMatch := quoteRegex.FindAllIndex([]byte(parse), -1)
+	parseQuotesSimplify := parse
+	if quoteMatch != nil {
+		parseQuotesSimplify = string(quoteRegex.ReplaceAll([]byte(parse), []byte{'#', '#'}))
+	}
+
+	fmt.Printf("parse after apply mask to quotes: (%d)[%s]=>(%d)[%s]\n", len(parse), parse, len(parseQuotesSimplify), parseQuotesSimplify)
+
+	// parse command gcode and parameters gcode
+	gcodesRegex := regexp.MustCompile(`(\w-?\d+(\.\d+)?\s)|((^\w")|(\s*\w(##)*")).*"|(\s*;.*$)|(\w-?\d+(\.\d+)?$)`)
+	gcodesMatchIndex := gcodesRegex.FindAllStringIndex(parse, -1)
+	if gcodesMatchIndex == nil {
+		return nil, fmt.Errorf("failed to try get command gcode: There isn't match to (%d):%s", len(parse), parse)
+	}
+	if len(gcodesMatchIndex) == 0 {
+		return nil, fmt.Errorf("failed to try get command gcode: There is zero matchto (%d):%s", len(parse), parse)
+	}
+
+	// search characters remainders
+	fmt.Printf("from: %s\n", parse)
+	parseCheckEmpty := parse
+	for _, loc := range gcodesMatchIndex {
+		fmt.Printf("\t{%d,%d} => (%d)[%s]\n", loc[0], loc[1], len(parse[loc[0]:loc[1]]), parse[loc[0]:loc[1]])
+		for i := loc[0]; i < loc[1]; i++ {
+			out := []rune(parseCheckEmpty)
+			out[i] = ' '
+			parseCheckEmpty = string(out)
+		}
+	}
+	parseCheckEmpty = strings.TrimSpace(parseCheckEmpty)
+	// if there are some characters remaind then is error
+	if len(parseCheckEmpty) > 0 {
+		return nil, fmt.Errorf("found undefined symbols %s", parseCheckEmpty)
+	}
+
+	// parsing gcodes
+	var gcodeTemp gcode.Gcoder
+	var parameters []gcode.Gcoder
+	for _, loc := range gcodesMatchIndex {
+		m := parse[loc[0]:loc[1]]
+		m = strings.TrimSpace(m)
+		fmt.Printf("\ttry parse fragment: (%d)[%s]\n", len(m), m)
+
+		if len(m) == 1 {
+			// m is a unaddressable gcode
+			gcodeTemp, err = gcodeBlock.gcodeFactory.NewUnaddressableGcode(m[0])
+			if err != nil {
+				return nil, fmt.Errorf("try generate command gcode: %w", err)
+			}
+		} else {
+			// m contains address value
+			// m contains a string address?
+			if strings.Contains(m, "\"") {
+				fmt.Printf("ssssssssssssssssssssssssss\n")
+				gcodeTemp, err = gcodeBlock.gcodeFactory.NewAddressableGcodeString(m[0], m[1:])
+				if err != nil {
+					return nil, fmt.Errorf("try generate string gcode from %s: %w", m, err)
+				}
+			} else {
+				// m contains a float address?
+				if strings.Contains(m, ".") {
+					fmt.Printf("ffffffffffffffffffffff\n")
+					val, err := strconv.ParseFloat(m[1:], 32)
+					if err != nil {
+						return nil, fmt.Errorf("failed to try parse float value from %s gcode: %w", m, err)
+					}
+					gcodeTemp, err = gcodeBlock.gcodeFactory.NewAddressableGcodeFloat32(m[0], float32(val))
+					if err != nil {
+						return nil, fmt.Errorf("try generate float gcode from %s: %w", m, err)
+					}
+				} else {
+					fmt.Printf("iiiiiiiiiiiiiiiiiiiiii\n")
+					// m contains a integer address!
+					val, err := strconv.ParseInt(m[1:], 10, 32)
+					if err != nil {
+						return nil, fmt.Errorf("failed to try parse float value from %s gcode: %w", m, err)
+					}
+					gcodeTemp, err = gcodeBlock.gcodeFactory.NewAddressableGcodeInt32(m[0], int32(val))
+					if err != nil {
+						return nil, fmt.Errorf("try generate int32 gcode from %s: %w", m, err)
+					}
+				}
+			}
+		}
+
+		if gcodeBlock.command == nil {
+			// command
+			gcodeBlock.command = gcodeTemp
+		} else {
+			// parameters
+			parameters = append(parameters, gcodeTemp)
+		}
+	}
+
+	if len(parameters) > 0 {
+		gcodeBlock.parameters = parameters
+	}
+
+	if gcodeBlock.command == nil {
+		return nil, fmt.Errorf("not found any command to try parse %s", parse)
+	}
+
+	fmt.Printf("\nresult: (%d)[%s]\n\n", len(gcodeBlock.ToLine("%l %c %p%k %m")), gcodeBlock.ToLine("%l %c %p%k %m"))
+	return gcodeBlock, nil
 }
 
 //#endregion
@@ -464,6 +471,29 @@ func prepareSourceToParse(s string) string {
 	s = removeSpecialChars(s)
 
 	return s
+}
+
+type elementTaken struct {
+	taken     string
+	remainder string
+}
+
+func take(source string, regex string) (elementTaken, error) {
+	//parse line number gcode
+	//re := regexp.MustCompile(`^N\d+`)
+	r := regexp.MustCompile(regex)
+
+	match := r.FindIndex([]byte(source))
+	fmt.Printf("lineRegex: %v\n", match)
+	if match == nil {
+		return elementTaken{remainder: source}, nil
+	}
+
+	if len(match) == 0 {
+		return elementTaken{remainder: source}, nil
+	}
+
+	return elementTaken{taken: source[match[0]:match[1]], remainder: source[:match[0]] + source[match[1]:]}, nil
 }
 
 //#endregion
