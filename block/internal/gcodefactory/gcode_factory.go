@@ -10,6 +10,10 @@
 package gcodefactory
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/mauroalderete/gcode-cli/gcode"
 	"github.com/mauroalderete/gcode-cli/gcode/addressablegcode"
 	"github.com/mauroalderete/gcode-cli/gcode/unaddressablegcode"
@@ -93,4 +97,79 @@ func (g *GcodeFactory) NewAddressableGcodeString(word byte, address string) (gco
 	}
 
 	return ng, nil
+}
+
+func (g *GcodeFactory) Parse(source string) (gcode.Gcoder, error) {
+
+	if source == "" {
+		return nil, fmt.Errorf("it is not possible to parse an empty string")
+	}
+
+	var gcode gcode.Gcoder
+	var err error
+
+	// is an unaddressable gcode
+	if len(source) == 1 {
+
+		gcode, err = g.NewUnaddressableGcode(source[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %s, error to instance a new unaddresable gcode: %w", source, err)
+		}
+
+		return gcode, nil
+	}
+
+	// contains a string address
+	if strings.Contains(source, "\"") {
+
+		gcode, err = g.NewAddressableGcodeString(source[0], source[1:])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %s, error to instance a new string addressable gcode: %w", source, err)
+		}
+
+		return gcode, nil
+	}
+
+	// contains a float address
+	if strings.Contains(source, ".") {
+
+		val, err := strconv.ParseFloat(source[1:], 32)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %s, error to try get float address: %w", source, err)
+		}
+
+		gcode, err = g.NewAddressableGcodeFloat32(source[0], float32(val))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %s, error to instance a new float32 addressable gcode: %w", source, err)
+		}
+
+		return gcode, nil
+	}
+
+	// contains a linenumber or checksum gcode
+	if source[0] == 'N' || source[0] == '*' {
+
+		val, err := strconv.ParseInt(source[1:], 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("failed to try parse int value from %s gcode: %w", source, err)
+		}
+
+		gcode, err = g.NewAddressableGcodeUint32(source[0], uint32(val))
+		if err != nil {
+			return nil, fmt.Errorf("try generate uint32 gcode from %s: %w", source, err)
+		}
+
+		return gcode, nil
+	}
+
+	val, err := strconv.ParseInt(source[1:], 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to try parse int value from %s gcode: %w", source, err)
+	}
+	gcode, err = g.NewAddressableGcodeUint32(source[0], uint32(val))
+	if err != nil {
+		return nil, fmt.Errorf("try generate uint32 gcode from %s: %w", source, err)
+	}
+
+	return gcode, nil
 }
