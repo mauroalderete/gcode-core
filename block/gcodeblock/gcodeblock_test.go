@@ -463,6 +463,8 @@ func TestParse(t *testing.T) {
 		"checksum_fail_6":         {"N100 G\" \"\"92 \"\" \" X-1.0 Y2.0 Z-3.0 *10", false, ""},
 		"checksum_fail_7":         {"N100 G\" \"\" 92 \"\" \" X1.0 Y-2.0 Z-3.0 *10", false, ""},
 		"checksum_fail_8":         {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0 *10", false, ""},
+		"special_0":               {"N92", false, ""},
+		"special_1":               {"G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0 G\"\"\"92\"\"\"", true, "G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0 G\"\"\"92\"\"\""},
 	}
 
 	for name, tc := range cases {
