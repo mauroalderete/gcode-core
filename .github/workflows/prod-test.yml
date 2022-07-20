@@ -5,7 +5,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  prod-test:
+    name: Production Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
