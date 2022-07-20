@@ -93,6 +93,9 @@ type GcoderFactory interface {
 	NewAddressableGcodeInt32(word byte, address int32) (AddressableGcoder[int32], error)
 	NewAddressableGcodeFloat32(word byte, address float32) (AddressableGcoder[float32], error)
 	NewAddressableGcodeString(word byte, address string) (AddressableGcoder[string], error)
+
+	// Create a Gcoder instance from a string input.
+	Parse(source string) (Gcoder, error)
 }
 
 //#endregion

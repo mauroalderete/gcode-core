@@ -196,3 +196,62 @@ func TestGcodeAddressableFactoryNewGcodeAddressable(t *testing.T) {
 		}
 	})
 }
+
+func TestParse(t *testing.T) {
+
+	// output:           "N4 G92 E0*67 ;comentario",
+	cases := map[string]struct {
+		input  string
+		valid  bool
+		output string
+	}{
+		"command_0":      {"G92", true, "G92"},
+		"command_1":      {"G92.3", true, "G92.3"},
+		"command_2":      {"G\"hola\"", true, "G\"hola\""},
+		"command_3":      {"N1", true, "N1"},
+		"command_4":      {"*1", true, "*1"},
+		"command_5":      {"G", true, "G"},
+		"command_6":      {"G-92", true, "G-92"},
+		"command_7":      {"G-92.0", true, "G-92.0"},
+		"command_8":      {"N92.0", false, ""},
+		"command_fail_0": {"G 92", false, ""},
+		"command_fail_1": {"K92.3", false, ""},
+		"command_fail_2": {"G\"\"hola\"", false, ""},
+		"command_fail_3": {"N-1", false, ""},
+		"command_fail_4": {"*-1", false, ""},
+		"command_fail_5": {"", false, ""},
+		"command_fail_6": {"K", false, ""},
+		"command_fail_7": {"G1.x", false, ""},
+		"command_fail_8": {"Nx", false, ""},
+	}
+
+	mockGcodeFactory := &GcodeFactory{}
+
+	for name, tc := range cases {
+		t.Run(fmt.Sprintf("%s[%s]", name, tc.input), func(t *testing.T) {
+			gb, err := mockGcodeFactory.Parse(tc.input)
+			if tc.valid {
+				if err != nil {
+					t.Errorf("got error %v, want error nil", err)
+				}
+
+				if gb == nil {
+					t.Errorf("got gcodeBlock nil, want gcodeBlock not nil")
+					return
+				}
+
+				if gb.String() != tc.output {
+					t.Errorf("got gcodeBlock (%d)[%s], want gcodeBlock: (%d)[%s]", len(gb.String()), gb.String(), len(tc.output), tc.output)
+				}
+			} else {
+				if err == nil {
+					t.Errorf("got error nil, want error not nil")
+				}
+
+				if gb != nil {
+					t.Errorf("got gcodeBlock not nil, want gcodeBlock nil")
+				}
+			}
+		})
+	}
+}
