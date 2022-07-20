@@ -1,3 +1,3 @@
-module github.com/mauroalderete/gcode-cli
+module github.com/mauroalderete/gcode-core
 
 go 1.18

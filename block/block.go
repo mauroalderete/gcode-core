@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"hash"
 
-	"github.com/mauroalderete/gcode-cli/gcode"
+	"github.com/mauroalderete/gcode-core/gcode"
 )
 
 // Blocker defines the minimal methods to handle each element that compose a block

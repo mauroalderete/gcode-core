@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"hash"
 
-	"github.com/mauroalderete/gcode-cli/gcode"
+	"github.com/mauroalderete/gcode-core/gcode"
 )
 
 // optionalBlockPropertyCallbackable is a type that define the signature of the callbacks that implement logic to configure a new block instance.

@@ -13,10 +13,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mauroalderete/gcode-cli/block"
-	"github.com/mauroalderete/gcode-cli/block/internal/gcodefactory"
-	"github.com/mauroalderete/gcode-cli/checksum"
-	"github.com/mauroalderete/gcode-cli/gcode"
+	"github.com/mauroalderete/gcode-core/block"
+	"github.com/mauroalderete/gcode-core/block/internal/gcodefactory"
+	"github.com/mauroalderete/gcode-core/checksum"
+	"github.com/mauroalderete/gcode-core/gcode"
 )
 
 const (

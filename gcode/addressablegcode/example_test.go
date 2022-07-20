@@ -3,9 +3,9 @@ package addressablegcode_test
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-cli/gcode"
-	"github.com/mauroalderete/gcode-cli/gcode/addressablegcode"
-	"github.com/mauroalderete/gcode-cli/gcode/unaddressablegcode"
+	"github.com/mauroalderete/gcode-core/gcode"
+	"github.com/mauroalderete/gcode-core/gcode/addressablegcode"
+	"github.com/mauroalderete/gcode-core/gcode/unaddressablegcode"
 )
 
 func ExampleNew() {
