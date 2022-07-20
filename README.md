@@ -1,5 +1,5 @@
 # gcode-core
 
-[![Test Status](https://github.com/mauroalderete/gcode-core/actions/workflows/on-pull-request.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/on-pull-request.yml)
+[![test](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml)
 
 Library Golang to model gcode commands.
