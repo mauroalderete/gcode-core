@@ -1,5 +1,4 @@
-name: on-pull-request
-
+name: on-push
 on: push
 
 jobs:
