@@ -10,7 +10,7 @@ package unaddressablegcode
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-cli/gcode"
+	"github.com/mauroalderete/gcode-core/gcode"
 )
 
 //#region gcode struct

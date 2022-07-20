@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mauroalderete/gcode-cli/gcode"
+	"github.com/mauroalderete/gcode-core/gcode"
 )
 
 //#region Mockups

@@ -5,11 +5,11 @@ import (
 	"hash"
 	"testing"
 
-	"github.com/mauroalderete/gcode-cli/block"
-	"github.com/mauroalderete/gcode-cli/block/internal/gcodefactory"
-	"github.com/mauroalderete/gcode-cli/checksum"
-	"github.com/mauroalderete/gcode-cli/gcode"
-	"github.com/mauroalderete/gcode-cli/gcode/addressablegcode"
+	"github.com/mauroalderete/gcode-core/block"
+	"github.com/mauroalderete/gcode-core/block/internal/gcodefactory"
+	"github.com/mauroalderete/gcode-core/checksum"
+	"github.com/mauroalderete/gcode-core/gcode"
+	"github.com/mauroalderete/gcode-core/gcode/addressablegcode"
 )
 
 func TestNew(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mauroalderete/gcode-cli/gcode"
+	"github.com/mauroalderete/gcode-core/gcode"
 )
 
 func ExampleIsValidWord() {

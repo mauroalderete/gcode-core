@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mauroalderete/gcode-cli/gcode/unaddressablegcode"
+	"github.com/mauroalderete/gcode-core/gcode/unaddressablegcode"
 )
 
 func ExampleNew() {

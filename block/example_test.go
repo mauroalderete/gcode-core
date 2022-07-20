@@ -3,10 +3,10 @@ package block_test
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-cli/block"
-	"github.com/mauroalderete/gcode-cli/block/gcodeblock"
-	"github.com/mauroalderete/gcode-cli/gcode"
-	"github.com/mauroalderete/gcode-cli/gcode/addressablegcode"
+	"github.com/mauroalderete/gcode-core/block"
+	"github.com/mauroalderete/gcode-core/block/gcodeblock"
+	"github.com/mauroalderete/gcode-core/gcode"
+	"github.com/mauroalderete/gcode-core/gcode/addressablegcode"
 )
 
 func ExampleBlocker() {

@@ -3,7 +3,7 @@ package checksum_test
 import (
 	"fmt"
 
-	"github.com/mauroalderete/gcode-cli/checksum"
+	"github.com/mauroalderete/gcode-core/checksum"
 )
 
 func Example() {
