@@ -228,6 +228,14 @@ func New(command gcode.Gcoder, options ...block.BlockConstructorConfigurationCal
 		if err != nil {
 			return nil, fmt.Errorf("failed to load configuration: %w", err)
 		}
+
+		// apply each configuration callback that modify the new gcodeBlock instance
+		for _, action := range configurator.configurationCallbacks {
+			err := action(gcodeBlock)
+			if err != nil {
+				return nil, fmt.Errorf("failed to apply configuration: %w", err)
+			}
+		}
 	}
 
 	// if is necesary, can validate that gcodeBlock is in valid state
@@ -282,20 +290,14 @@ func Parse(source string, options ...block.BlockParserConfigurationCallbackable)
 	parse := prepareSourceToParse(source)
 
 	// recover comments value if is exist
-	element, err := take(parse, `\s*;.*$`)
-	if err != nil {
-		return nil, err
-	}
+	element := take(parse, `\s*;.*$`)
 	if element.taken != "" {
 		gcodeBlock.comment = element.taken
 		parse = strings.TrimSpace(element.remainder)
 	}
 
 	// recover linenumber value if is exist
-	element, err = take(parse, `^N\d+`)
-	if err != nil {
-		return nil, err
-	}
+	element = take(parse, `^N\d+`)
 	if element.taken != "" {
 		address, err := strconv.ParseInt(element.taken[1:], 10, 32)
 		if err != nil {
@@ -310,10 +312,7 @@ func Parse(source string, options ...block.BlockParserConfigurationCallbackable)
 	}
 
 	// recover checksum value if is exist
-	element, err = take(parse, `\b\*\d+$`)
-	if err != nil {
-		return nil, err
-	}
+	element = take(parse, `\b\*\d+$`)
 	if element.taken != "" {
 		address, err := strconv.ParseInt(element.taken[1:], 10, 32)
 		if err != nil {
@@ -336,9 +335,6 @@ func Parse(source string, options ...block.BlockParserConfigurationCallbackable)
 	gcodesMatchIndex := gcodesRegex.FindAllStringIndex(parseQuotesSimplify, -1)
 	if gcodesMatchIndex == nil {
 		return nil, fmt.Errorf("failed to try get command gcode: There isn't match to (%d):%s", len(parse), parse)
-	}
-	if len(gcodesMatchIndex) == 0 {
-		return nil, fmt.Errorf("failed to try get command gcode: There is zero matchto (%d):%s", len(parse), parse)
 	}
 
 	// apply gcodes index getting, using parseQuotesSimplify, on parse
@@ -397,7 +393,6 @@ func removeSpecialChars(s string) string {
 // It doesn't verify if s strings is a gcode line valid
 func prepareSourceToParse(s string) string {
 	s = strings.TrimSpace(s)
-	s = strings.ToUpper(s)
 	s = removeDuplicateSpaces(s)
 	s = removeSpecialChars(s)
 
@@ -409,17 +404,16 @@ type elementTaken struct {
 	remainder string
 }
 
-func take(source string, regex string) (elementTaken, error) {
-	//parse line number gcode
-	//re := regexp.MustCompile(`^N\d+`)
+func take(source string, regex string) elementTaken {
+
 	r := regexp.MustCompile(regex)
 
 	match := r.FindIndex([]byte(source))
 	if match == nil {
-		return elementTaken{remainder: source}, nil
+		return elementTaken{remainder: source}
 	}
 
-	return elementTaken{taken: source[match[0]:match[1]], remainder: source[:match[0]] + source[match[1]:]}, nil
+	return elementTaken{taken: source[match[0]:match[1]], remainder: source[:match[0]] + source[match[1]:]}
 }
 
 //#endregion

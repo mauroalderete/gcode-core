@@ -37,6 +37,11 @@ func TestNew(t *testing.T) {
 		t.Errorf("got error not nil, want error nil: %v", err)
 	}
 
+	mockChecksumFailed, err := addressablegcode.New[uint32]('*', 10)
+	if err != nil {
+		t.Errorf("got error not nil, want error nil: %v", err)
+	}
+
 	mockComment := ";comentario"
 
 	mockHash := checksum.New()
@@ -64,6 +69,10 @@ func TestNew(t *testing.T) {
 			command: mockCommand,
 			output:  "G92",
 			valid:   true,
+		},
+		"no command": {
+			command: nil,
+			valid:   false,
 		},
 		"lineNumber nil": {
 			command:          mockCommand,
@@ -121,6 +130,16 @@ func TestNew(t *testing.T) {
 			checksum:         mockChecksum,
 			valid:            true,
 			output:           "N4 G92 E0*67",
+		},
+		"+checksum not verified": {
+			command:          mockCommand,
+			configLineNumber: true,
+			lineNumber:       mockLineNumber,
+			configParameters: true,
+			parameters:       mockParameters,
+			configChecksum:   true,
+			checksum:         mockChecksumFailed,
+			valid:            false,
 		},
 		"+linenumber+parameters+checksum+comment": {
 			command:          mockCommand,
@@ -234,10 +253,6 @@ func TestNew(t *testing.T) {
 			} else {
 				if err == nil {
 					t.Errorf("got error nil, want error not nil")
-				}
-
-				if gb != nil {
-					t.Errorf("got gcodeBlock not nil, want gcodeBlock nil")
 				}
 			}
 		})
@@ -463,8 +478,68 @@ func TestParse(t *testing.T) {
 		"checksum_fail_6":         {"N100 G\" \"\"92 \"\" \" X-1.0 Y2.0 Z-3.0 *10", false, ""},
 		"checksum_fail_7":         {"N100 G\" \"\" 92 \"\" \" X1.0 Y-2.0 Z-3.0 *10", false, ""},
 		"checksum_fail_8":         {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0 *10", false, ""},
+		"comments_0":              {"N100 G92 X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G92 X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_1":              {"N100 G92 1X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_2":              {"N100 *G92 X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_3":              {"N100  G92   X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G92 X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_4":              {"N100 G92 X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G92 X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_5":              {"N100 G 92 X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_6":              {"N100 \"G92 X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_7":              {"N100  \"G92\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_8":              {"N100 G\"92\" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\"92\" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_9":              {"N100 G\" 92\" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\" 92\" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_10":             {"N100 G\"92 \" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\"92 \" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_11":             {"N100 G\" 92 \" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\" 92 \" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_12":             {"N100 G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_13":             {"N100 G\"\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_14":             {"N100 G\"\"\"92\"\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_15":             {"N100  G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_16":             {"N100  G\"\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_17":             {"N100  G\"\"\"92\"\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_18":             {"N100 G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_19":             {"N100 G\"\"\"\"92\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_20":             {"N100 G\"\"\"92\"\"\"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_21":             {"N100 G\"\" \"92\" \"\" X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_22":             {"N100 G\" \"\"92\"\" \" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\" \"\"92\"\" \" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_23":             {"N100 G\" \"\"92 \"\" \" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\" \"\"92 \"\" \" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_24":             {"N100 G\" \"\" 92 \"\" \" X1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G\" \"\" 92 \"\" \" X1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_25":             {"N100 G92 X-1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G92 X-1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_26":             {"N100 G92 1X1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_27":             {"N100 *G92 X-1.0 Y-2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_28":             {"N100  G92   X-1.0 Y-2.0 Z-3.0*10;lorem ipsu", true, "N100 G92 X-1.0 Y-2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_29":             {"N100 G92 X-1.0 Y2.0 Z3.0*10;lorem ipsu", true, "N100 G92 X-1.0 Y2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_30":             {"N100 G 92 X-1.0 Y-2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_31":             {"N100 \"G92 X-1.0 Y-2.0 Z-3.0*10;lorem ipsu", false, ""},
+		"comments_32":             {"N100  \"G92\" X-1.0 Y2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_33":             {"N100 G\"92\" X1.0 Y-2.0 Z3.0*10;lorem ipsu", true, "N100 G\"92\" X1.0 Y-2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_34":             {"N100 G\" 92\" X1.0 Y2.0 Z-3.0*10;lorem ipsu", true, "N100 G\" 92\" X1.0 Y2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_35":             {"N100 G\"92 \" X-1.0 Y-2.0 Z3.0*10;lorem ipsu", true, "N100 G\"92 \" X-1.0 Y-2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_36":             {"N100 G\" 92 \" X-1.0 Y-2.0 Z-3.0*10;lorem ipsu", true, "N100 G\" 92 \" X-1.0 Y-2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_37":             {"N100 G\"\"\"92\"\"\" X1.0 Y-2.0 Z-3.0*10;lorem ipsu", true, "N100 G\"\"\"92\"\"\" X1.0 Y-2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_38":             {"N100 G\"\"\"\"92\"\"\" X1.0 Y-2.0 Z-3.0*10;lorem ipsu", false, ""},
+		"comments_39":             {"N100 G\"\"\"92\"\"\"\" X1.0 Y2.0 Z-3.0*10;lorem ipsu", false, ""},
+		"comments_40":             {"N100  G\"\"\"92\"\"\" X1.0 Y2.0 Z-3.0*10;lorem ipsu", true, "N100 G\"\"\"92\"\"\" X1.0 Y2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_41":             {"N100  G\"\"\"\"92\"\"\" X1.0 Y2.0 Z-3.0*10;lorem ipsu", false, ""},
+		"comments_42":             {"N100  G\"\"\"92\"\"\"\" X1.0 Y-2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_43":             {"N100 G\"\"\"92\"\"\" X1.0 Y-2.0 Z3.0*10;lorem ipsu", true, "N100 G\"\"\"92\"\"\" X1.0 Y-2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_44":             {"N100 G\"\"\"\"92\"\"\" X1.0 Y-2.0 Z3.0*10;lorem ipsu", false, ""},
+		"comments_45":             {"N100 G\"\"\"92\"\"\"\" X1.0 Y2.0 Z-3.0*10;lorem ipsu", false, ""},
+		"comments_46":             {"N100 G\"\" \"92\" \"\" X1.0 Y2.0 Z-3.0*10;lorem ipsu", false, ""},
+		"comments_47":             {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0*10;lorem ipsu", true, "N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0*10 ;lorem ipsu"},
+		"comments_48":             {"N100 G\" \"\"92 \"\" \" X-1.0 Y2.0 Z-3.0*10;lorem ipsu", true, "N100 G\" \"\"92 \"\" \" X-1.0 Y2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_49":             {"N100 G\" \"\" 92 \"\" \" X1.0 Y-2.0 Z-3.0*10;lorem ipsu", true, "N100 G\" \"\" 92 \"\" \" X1.0 Y-2.0 Z-3.0*10 ;lorem ipsu"},
+		"comments_fail_1":         {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0 *10.3 ; lorem ipsu", false, ""},
+		"comments_fail_2":         {"N100 G\" \"\"92 \"\" \" X-1.0 Y2.0 Z-3.0 *10.0 ;;lorem ipsulorem ipsu", false, ""},
+		"comments_fail_3":         {"N100 G\" \"\" 92 \"\" \" X1.0 Y-2.0 Z-3.0 *-10 ;lorem ipsu", false, ""},
+		"comments_fail_4":         {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0 *-10.3 ;lorem ipsu", false, ""},
+		"comments_fail_5":         {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0 *10 ;lorem ipsu", false, ""},
+		"comments_fail_6":         {"N100 G\" \"\"92 \"\" \" X-1.0 Y2.0 Z-3.0 *10 ;lorem ipsu", false, ""},
+		"comments_fail_7":         {"N100 G\" \"\" 92 \"\" \" X1.0 Y-2.0 Z-3.0 *10 ;lorem ipsu", false, ""},
+		"comments_fail_8":         {"N100 G\" \"\"92\"\" \" X1.0 Y-2.0 Z3.0 *10", false, ""},
 		"special_0":               {"N92", false, ""},
 		"special_1":               {"G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0 G\"\"\"92\"\"\"", true, "G\"\"\"92\"\"\" X1.0 Y2.0 Z3.0 G\"\"\"92\"\"\""},
+		"special_2":               {"N2.3 G21", false, ""},
+		"special_3":               {"N2 K21", false, ""},
 	}
 
 	for name, tc := range cases {
@@ -507,6 +582,18 @@ func TestParse(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestParse_ConfigurationError_first(t *testing.T) {
+	gb, err := Parse("N1 G1", func(config block.BlockParserConfigurer) error {
+		return fmt.Errorf("something went wrong")
+	})
+	if err == nil {
+		t.Errorf("got error nil, want error not nil")
+	}
+	if gb != nil {
+		t.Errorf("got gcodeBlock not nil, want gcodeBlock nil")
 	}
 }
 
@@ -555,7 +642,7 @@ func TestGcodeblogk_Parameters(t *testing.T) {
 
 }
 
-func TestGcodeblogk_Calculate(t *testing.T) {
+func TestGcodeblock_Calculate(t *testing.T) {
 
 	var cases = [1]struct {
 		source        string
@@ -592,7 +679,7 @@ func TestGcodeblogk_Calculate(t *testing.T) {
 	}
 }
 
-func TestGcodeblogk_Verify(t *testing.T) {
+func TestGcodeblock_Verify(t *testing.T) {
 
 	var cases = [1]struct {
 		source string
@@ -624,4 +711,34 @@ func TestGcodeblogk_Verify(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGcodeblock_ToLineError(t *testing.T) {
+
+	mockCommand, err := addressablegcode.New[int32]('G', 92)
+	if err != nil {
+		t.Errorf("got error not nil, want error nil: %v", err)
+	}
+
+	t.Run("params slice empty", func(t *testing.T) {
+
+		b, err := New(mockCommand, func(config block.BlockConstructorConfigurer) error {
+			params := []gcode.Gcoder{}
+			err := config.SetParameters(params)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			t.Errorf("got %v, want nil error", err)
+			return
+		}
+
+		a := b.ToLine("%l")
+		if a != "" {
+			t.Errorf("got (%d)[%s], want (0)[]", len(a), a)
+			return
+		}
+	})
 }

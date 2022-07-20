@@ -99,6 +99,10 @@ func (g *GcodeFactory) NewAddressableGcodeString(word byte, address string) (gco
 	return ng, nil
 }
 
+// Parse recives a string expression and tries convert a gcode.Gcoder object.
+// source is a string expression of a gcode valid.
+// if the expression is not recognited then returns an error.
+// The orden to evaluate is N or checksum gcode first, string gcode second, nexto the float gcode and int gcode to end.
 func (g *GcodeFactory) Parse(source string) (gcode.Gcoder, error) {
 
 	if source == "" {
@@ -114,6 +118,26 @@ func (g *GcodeFactory) Parse(source string) (gcode.Gcoder, error) {
 		gcode, err = g.NewUnaddressableGcode(source[0])
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse %s, error to instance a new unaddresable gcode: %w", source, err)
+		}
+
+		return gcode, nil
+	}
+
+	// contains a linenumber or checksum gcode
+	if source[0] == 'N' || source[0] == '*' {
+
+		val, err := strconv.ParseInt(source[1:], 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("failed to try parse uint32 value from %s gcode: %w", source, err)
+		}
+
+		if val < 0 {
+			return nil, fmt.Errorf("failed to try parse %d to uint32 value, it must be positive", val)
+		}
+
+		gcode, err = g.NewAddressableGcodeUint32(source[0], uint32(val))
+		if err != nil {
+			return nil, fmt.Errorf("try generate uint32 gcode from %s: %w", source, err)
 		}
 
 		return gcode, nil
@@ -146,27 +170,11 @@ func (g *GcodeFactory) Parse(source string) (gcode.Gcoder, error) {
 		return gcode, nil
 	}
 
-	// contains a linenumber or checksum gcode
-	if source[0] == 'N' || source[0] == '*' {
-
-		val, err := strconv.ParseInt(source[1:], 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("failed to try parse int value from %s gcode: %w", source, err)
-		}
-
-		gcode, err = g.NewAddressableGcodeUint32(source[0], uint32(val))
-		if err != nil {
-			return nil, fmt.Errorf("try generate uint32 gcode from %s: %w", source, err)
-		}
-
-		return gcode, nil
-	}
-
 	val, err := strconv.ParseInt(source[1:], 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("failed to try parse int value from %s gcode: %w", source, err)
 	}
-	gcode, err = g.NewAddressableGcodeUint32(source[0], uint32(val))
+	gcode, err = g.NewAddressableGcodeInt32(source[0], int32(val))
 	if err != nil {
 		return nil, fmt.Errorf("try generate uint32 gcode from %s: %w", source, err)
 	}
