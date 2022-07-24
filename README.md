@@ -1,10 +1,13 @@
 # gcode-core
 
+&nbsp;
 <p align="center">
 	<img src="./.assets/gcode-core-logo.png" alt="logo" width="300"/>
 </p>
 
 <h4 align="center">Manipulate and edit G-code commands, blocks and files.</h4>
+
+&nbsp;
 
 <div align="center">
 
@@ -38,8 +41,8 @@
   </a>
 </p>
 
+&nbsp;
 # :wave: Introducing `gcode-core`
-https://codecov.io/gh/maticzav/graphql-shield/branch/master/graph/badge.svg
 `gcode-core` is a Golang library to model, manipulate and edit G-code commands, blocks and files. Easily, you can open gcode files and apply them to all kinds of massive operations that come to mind.
 
 - Do you need to apply skew correction to files before sending to your CNC machine them?
@@ -95,8 +98,6 @@ There are many packages you can import. Some export concrete implementations tha
 Please, feel free to examine the documentation and contribute by writing any question, suggestion or issue using our discussion channels or creating a new issue.
 
 # :fire: Features
-
-With `gcode-core` you can do the followings
 
 With `gcode-core` you can do the following
 
@@ -168,7 +169,6 @@ go test ./...
 ```bash
 GOROOT=$GOPATH godoc -http=localhost:9090
 ```
-
 # :hamburger: Built With
 
 - [Golang](https://go.dev/) 1.18
@@ -190,4 +190,3 @@ If you wish to contribute, you can work on any features [listed here](https://gi
 We all need support and motivation. `gcode-core` is not an exception. Please give this project a :star: start to encourage and show that you liked it. Don't forget to leave a :star: star before you move away.
 
 If you found the app helpful, consider supporting us with a coffee.
-
