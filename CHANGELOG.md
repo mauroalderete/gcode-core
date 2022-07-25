@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 24/07/2022 Release 0.1.0-alpha.2
+
+New alpha release with minimal features to model and handle gcode commands and blocks.
+
 # 09/07/2022
 
 Implement the opaque errors strategy.

@@ -14,7 +14,7 @@
 <a href="https://github.com/mauroalderete/gcode-core/blob/main/LICENSE">
 	<img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
 </a>
-<a href="https://github.com/mauroalderete/gcode-core/blob/main/CODE_OF_CONDUCT">
+<a href="https://github.com/mauroalderete/gcode-core/blob/main/CODE_OF_CONDUCT.md">
 	<img alt="Contributor covenant: 2.1" src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg">
 </a>
 <a href="https://semver.org/">
@@ -184,7 +184,7 @@ This project is licensed under the MIT License - see the [`LICENSE`](LICENSE) fi
 
 Any kind of positive contribution is welcome! Please help us to grow by contributing to the project.
 
-If you wish to contribute, you can work on any features [listed here](https://github.com/mauroalderete/gcode-core#-upcoming-features) or create one on your own. After adding your code, please send us a Pull Request.
+If you wish to contribute, you can work on any features [listed here](https://github.com/mauroalderete/gcode-core#rocket-upcomming-features) or create one on your own. After adding your code, please send us a Pull Request.
 
 > Please read [`CONTRIBUTING`](CONTRIBUTING.md) for details on our [`CODE OF CONDUCT`](CODE_OF_CONDUCT.md), and the process for submitting pull requests to us.
 
