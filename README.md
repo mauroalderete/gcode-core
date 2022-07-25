@@ -93,7 +93,7 @@ func main() {
 
 There are many packages you can import. Some export concrete implementations that you can start to interact with your files speedily. Instead, others export interfaces and constructors that allow you to use them with dependency injection patterns.
 
-Please, feel free to examine the documentation and [`contribute`](CONTRIBUTING.md) by writing any question, suggestion or issue using our [`discussion channels`](https://github.com/mauroalderete/gcode-core/discussions) or creating a [`new issue`](https://github.com/mauroalderete/gcode-core/issues/new/choose).
+Please, feel free to examine the [`documentation`](https://pkg.go.dev/github.com/mauroalderete/gcode-core) and [`contribute`](CONTRIBUTING.md) by writing any question, suggestion or issue using our [`discussion channels`](https://github.com/mauroalderete/gcode-core/discussions) or creating a [`new issue`](https://github.com/mauroalderete/gcode-core/issues/new/choose).
 
 # :fire: Features
 
