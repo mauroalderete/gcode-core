@@ -1,14 +1,15 @@
 # gcode-core
 
 &nbsp;
-<p align="center">
-	<img src="./.assets/gcode-core-logo.png" alt="logo" width="300"/>
-</p>
+<div align="center">
+	
+<img src="./.assets/gcode-core-logo.png" alt="logo" width="300"/>
+
+</div>
 
 <h4 align="center">Manipulate and edit G-code commands, blocks and files.</h4>
 
 &nbsp;
-
 <div align="center">
 
 <a href="https://github.com/mauroalderete/gcode-core/blob/main/LICENSE">
@@ -20,29 +21,23 @@
 <a href="https://semver.org/">
 	<img alt="Semantic Versioning: 2.0.0" src="https://img.shields.io/badge/Semantic--Versioning-2.0.0-a05f79?logo=semantic-release&logoColor=f97ff0">
 </a>
-
-</div>
-
-<div align="center">
+<a href="https://pkg.go.dev/github.com/mauroalderete/gcode-core">
+	<img src="https://pkg.go.dev/badge/github.com/mauroalderete/gcode-core.svg" alt="Go Reference">
+</a>
 
 [![test](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml)
 
+<a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
+·
+<a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Request Feature</a>
+
+<a href="https://github.com/mauroalderete/gcode-core/discussions">
+	<img alt="Join the community on GitHub Discussions" src="https://img.shields.io/badge/Join%20the%20community-on%20GitHub%20Discussions-blue">
+</a>
+<a href="https://twitter.com/intent/tweet?text=👋%20Check%20this%20amazing%20repo%20https://github.com/mauroalderete/gcode-core,%20created%20by%20@_mauroalderete%0A%0A%23DEVCommunity%20%23100DaysOfCode%20%23Golang%20%23gcode">
+	<img src="https://img.shields.io/twitter/url?label=Share%20on%20Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Fatapas%2Fmodel-repo">
+</a>
 </div>
-
-<p align="center">
-    <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
-    ·
-    <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Request Feature</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/mauroalderete/gcode-core/discussions">
-    <img alt="Join the community on GitHub Discussions" src="https://img.shields.io/badge/Join%20the%20community-on%20GitHub%20Discussions-blue">
-  </a>
-  <a href="https://twitter.com/intent/tweet?text=👋%20Check%20this%20amazing%20repo%20https://github.com/mauroalderete/gcode-core,%20created%20by%20@_mauroalderete%0A%0A%23DEVCommunity%20%23100DaysOfCode%20%23Golang%20%23gcode">
-  <img src="https://img.shields.io/twitter/url?label=Share%20on%20Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Fatapas%2Fmodel-repo">
-  </a>
-</p>
 
 &nbsp;
 # :wave: Introducing `gcode-core`
@@ -98,7 +93,7 @@ func main() {
 
 There are many packages you can import. Some export concrete implementations that you can start to interact with your files speedily. Instead, others export interfaces and constructors that allow you to use them with dependency injection patterns.
 
-Please, feel free to examine the documentation and [`contribute`](CONTRIBUTING.md) by writing any question, suggestion or issue using our [`discussion channels`](https://github.com/mauroalderete/gcode-core/discussions) or creating a [`new issue`](https://github.com/mauroalderete/gcode-core/issues/new/choose).
+Please, feel free to examine the [`documentation`](https://pkg.go.dev/github.com/mauroalderete/gcode-core) and [`contribute`](CONTRIBUTING.md) by writing any question, suggestion or issue using our [`discussion channels`](https://github.com/mauroalderete/gcode-core/discussions) or creating a [`new issue`](https://github.com/mauroalderete/gcode-core/issues/new/choose).
 
 # :fire: Features
 
@@ -197,7 +192,7 @@ If you found the app helpful, consider supporting us with a coffee.
 &nbsp;
 <div align="center">
 <a href="https://www.buymeacoffee.com/mauroalderete">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="50px">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="40px">
 </a>
 &nbsp;
 <a href='https://cafecito.app/mauroalderete' rel='noopener' target='_blank'><img srcset='https://cdn.cafecito.app/imgs/buttons/button_6.png 1x, https://cdn.cafecito.app/imgs/buttons/button_6_2x.png 2x, https://cdn.cafecito.app/imgs/buttons/button_6_3.75x.png 3.75x' src='https://cdn.cafecito.app/imgs/buttons/button_6.png' alt='Invitame un café en cafecito.app' /></a>
