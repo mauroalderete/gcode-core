@@ -27,6 +27,7 @@
 
 [![test](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml)
 [![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
+[![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
 
 <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
 ·
