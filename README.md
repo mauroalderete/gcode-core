@@ -26,6 +26,7 @@
 </a>
 
 [![test](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml)
+[![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
 
 <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
 ·
