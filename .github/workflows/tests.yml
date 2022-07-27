@@ -1,12 +1,12 @@
-name: test
+name: Tests
 
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  prod-test:
-    name: Production Test
+  test:
+    name: Unit test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -18,10 +18,26 @@ jobs:
         with:
           go-version: 1.18
       
-      - name: Test with coverage
+      - name: Run unit test with coverage report
         run: go test -v ./... -coverprofile=coverage.out -covermode=count
-        
-      - name: Upload coverage to Codecov
+
+      - name: Save coverage file
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-file
+          path: ./coverage.out
+  
+  codecov:
+    name: Upload coverage report
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage file
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-file
+
+      - name: Uploading coverage file to Codecov
         uses: codecov/codecov-action@v3
         with:
           name: codecov-umbrella
@@ -29,5 +45,3 @@ jobs:
           fail_ci_if_error: true
           flags: unittests
           verbose: true
-          
-          
