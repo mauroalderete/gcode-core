@@ -25,7 +25,7 @@
 	<img src="https://pkg.go.dev/badge/github.com/mauroalderete/gcode-core.svg" alt="Go Reference">
 </a>
 
-[![test](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml)
+[![Tests](https://github.com/mauroalderete/gcode-core/actions/workflows/tests.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/tests.yml)
 [![CodeQL](https://github.com/mauroalderete/gcode-core/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/codeql-analysis.yml)
 [![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
