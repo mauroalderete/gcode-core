@@ -26,6 +26,7 @@
 </a>
 
 [![test](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/prod-test.yml)
+[![CodeQL](https://github.com/mauroalderete/gcode-core/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/codeql-analysis.yml)
 [![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mauroalderete/gcode-core.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mauroalderete/gcode-core/alerts/)
