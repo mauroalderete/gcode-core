@@ -1,0 +1,55 @@
+name: Versioning
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  versioning:
+    name: Versioning analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up semver tool
+        run: sudo wget -O /usr/local/bin/semver https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver && semver --version
+
+      - name: Get last tag
+        run: lasttag=$(git describe --tags --abbrev=0)
+
+      - name: Validating tag
+        run: 
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      
+      - name: Run unit test with coverage report
+        run: go test -v ./... -coverprofile=coverage.out -covermode=count
+
+      - name: Save coverage file
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-file
+          path: ./coverage.out
+  
+  codecov:
+    name: Upload coverage report
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage file
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-file
+
+      - name: Uploading coverage file to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov-umbrella
+          file: coverage.out
+          fail_ci_if_error: true
+          flags: unittests
+          verbose: true
