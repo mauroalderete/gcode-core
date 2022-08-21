@@ -1,13 +1,14 @@
 changelog:
   categories:
-    - title: Breaking Changes 🛠
+    - title: 'Breaking Changes :fire:'
       labels:
-        - Semver-Major
-        - breaking-change
-    - title: Exciting New Features 🎉
+        - BREAKING CHANGE
+    - title: 'New Features :confetti_ball:'
       labels:
-        - Semver-Minor
-        - enhancement
+        - feature
+    - title: 'Fixes :bug:'
+      labels:
+        - fix
     - title: Other Changes
       labels:
         - "*"

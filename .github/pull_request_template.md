@@ -6,15 +6,16 @@ Please include a summary of the change and which issue is fixed. Please also inc
 
 Please add linking to issue fixes. Follow the [recommendations](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue).
 
-Fixes # (issue)
+Fixes #(issue)
 
 ## Type of change
 
-Please delete options that are not relevant.
-
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation
+- [ ] Configure
+- [ ] Build
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
 
 # How Has This Been Tested?
 
