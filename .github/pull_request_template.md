@@ -8,15 +8,6 @@ Please add linking to issue fixes. Follow the [recommendations](https://docs.git
 
 Fixes #(issue)
 
-## Type of change
-
-- [ ] Documentation
-- [ ] Configure
-- [ ] Build
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-
 # How Has This Been Tested?
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
