@@ -30,7 +30,7 @@
 [![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mauroalderete/gcode-core.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mauroalderete/gcode-core/alerts/)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mauroalderete/gcode-core)](https://goreportcard.com/report/github.com/mauroalderete/gcode-core)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mauroalderete/gcode-core)](https://goreportcard.com/report/github.com/mauroalderete/gcode-core) [![Join the chat at https://gitter.im/gcode-core/community](https://badges.gitter.im/gcode-core/community.svg)](https://gitter.im/gcode-core/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
 ·
