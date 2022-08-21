@@ -80,30 +80,6 @@ func ExampleParse() {
 	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
 }
 
-// func ExampleGcodeBlock_Checksum() {
-// 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
-
-// 	b, err := gcodeblock.Parse(source, func(config block.BlockConfigurer) error {
-
-// 		gc, err := addressablegcode.New[uint32]('*', 85)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		config.SetChecksum(gc)
-
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 		return
-// 	}
-
-// 	fmt.Printf("checksum is: %s\n", b.Checksum())
-
-// 	// Output: checksum is: *85
-// }
-
 func ExampleGcodeBlock_Command() {
 	const source = "N7 G1 X2.0 Y2.0 F3000.0"
 
