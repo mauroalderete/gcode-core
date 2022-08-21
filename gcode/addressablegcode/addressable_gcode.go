@@ -1,7 +1,7 @@
 // addressablegcode package implements gcode.AddressableGcoder interface to model a gcode with an address element.
 //
 // Define a Gcode struct that implement gcode.AddressableGcoder interface.
-// This struct contain a word field to store the word value and an address field to store the addres value.
+// This struct contain a word field to store the word value and an address field to store the address value.
 //
 // Like AddressableGcoder interface, this Gcode struct use generics with the restrictions defined by AddressType.
 //
