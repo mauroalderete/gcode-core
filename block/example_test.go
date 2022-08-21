@@ -49,6 +49,10 @@ func ExampleBlocker() {
 
 		return nil
 	})
+	if err != nil {
+		fmt.Printf("failed to make a new gcodeblock: %v", err)
+		return
+	}
 
 	// calculate the checksum and update the block with the new value
 	err = b.UpdateChecksum()
