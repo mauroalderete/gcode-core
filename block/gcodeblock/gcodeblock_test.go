@@ -622,7 +622,7 @@ func TestGcodeblogk_Parameters(t *testing.T) {
 			}
 
 			if len(b.Parameters()) != len(tc.parameters) {
-				t.Errorf("got parameters size %d, want paramters size %d", len(b.Parameters()), len(tc.parameters))
+				t.Errorf("got parameters size %d, want parameters size %d", len(b.Parameters()), len(tc.parameters))
 				return
 			}
 

@@ -107,7 +107,7 @@ func (bc *blockConfigurator) SetHash(hash hash.Hash) error {
 }
 
 // SetComment store the block comments. It accept an empty string.
-// If this method isn't called when a new block is created, by default is an emtpy string.
+// If this method isn't called when a new block is created, by default is an empty string.
 func (bc *blockConfigurator) SetComment(comment string) error {
 
 	bc.configurationCallbacks = append(bc.configurationCallbacks, func(gb *GcodeBlock) error {

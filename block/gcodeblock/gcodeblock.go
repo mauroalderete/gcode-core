@@ -3,7 +3,7 @@
 // This package define GcodeBlock struct as a implemention of block.Blocker interface.
 //
 // Furemore, it defines two package functions that allows create new instances of GcodeBlock.
-// These fucntions can be used to a any instances that implement block.BlockerFactory
+// These functions can be used to a any instances that implement block.BlockerFactory
 package gcodeblock
 
 import (
@@ -155,7 +155,7 @@ func (b *GcodeBlock) Comment() string {
 //
 // %p: series of parameters gcode of the command gcode
 //
-// %k: checksum gcode of the usefull part of the block
+// %k: checksum gcode of the useful part of the block
 //
 // %m: comments of the block
 //
@@ -238,7 +238,7 @@ func New(command gcode.Gcoder, options ...block.BlockConstructorConfigurationCal
 		}
 	}
 
-	// if is necesary, can validate that gcodeBlock is in valid state
+	// if is necessary, can validate that gcodeBlock is in valid state
 	if gcodeBlock.checksum != nil {
 		if ok, err := gcodeBlock.VerifyChecksum(); !ok || err != nil {
 			return gcodeBlock, fmt.Errorf("gcode block %s is invalid, checksum result is %v, error: %w ", gcodeBlock, ok, err)
@@ -339,7 +339,7 @@ func Parse(source string, options ...block.BlockParserConfigurationCallbackable)
 
 	// apply gcodes index getting, using parseQuotesSimplify, on parse
 	// search characters remainders
-	// if there are some characters remaind then is error
+	// if there are some characters remained then is error
 	parseCheckEmpty := parse
 	for _, loc := range gcodesMatchIndex {
 		for i := loc[0]; i < loc[1]; i++ {

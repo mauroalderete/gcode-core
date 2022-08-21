@@ -39,7 +39,7 @@
 // An address struct that implement AddressableGcoder is bound with a series of methods that allow you to operate with the value of the address.
 //
 // Foremor, gcode package includes GcoderFactory.
-// It is a interace that contains some methods that return a new Gcoder instance or a new AddressableGcoder instance.
+// It is a interacted that contains some methods that return a new Gcoder instance or a new AddressableGcoder instance.
 //
 // gcode package provides two packages that implement all interfaces ready to use.
 package gcode
@@ -75,10 +75,10 @@ type AddressableGcoder[T AddressType] interface {
 	// Gcoder (via the embedded gcode.Gcoder interface) allow converts AddressableGcoder in a Gcoder element.
 	Gcoder
 
-	// Address return addres value of the data type T.
+	// Address return address value of the data type T.
 	Address() T
 
-	// SetAddress stores addres value of the data type T.
+	// SetAddress stores address value of the data type T.
 	// Return an error if the format the value is not valid.
 	SetAddress(value T) error
 }
