@@ -30,7 +30,7 @@
 [![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mauroalderete/gcode-core.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mauroalderete/gcode-core/alerts/)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mauroalderete/gcode-core)](https://goreportcard.com/report/github.com/mauroalderete/gcode-core) [![Join the chat at https://gitter.im/gcode-core/community](https://badges.gitter.im/gcode-core/community.svg)](https://gitter.im/gcode-core/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mauroalderete/gcode-core)](https://goreportcard.com/report/github.com/mauroalderete/gcode-core)
 
 <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
 ·
@@ -42,6 +42,10 @@
 <a href="https://twitter.com/intent/tweet?text=👋%20Check%20this%20amazing%20repo%20https://github.com/mauroalderete/gcode-core,%20created%20by%20@_mauroalderete%0A%0A%23DEVCommunity%20%23100DaysOfCode%20%23Golang%20%23gcode">
 	<img src="https://img.shields.io/twitter/url?label=Share%20on%20Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Fatapas%2Fmodel-repo">
 </a>
+<a href="https://gitter.im/gcode-core/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
+	<img src="https://badges.gitter.im/gcode-core/community.svg">
+</a>
+
 </div>
 
 &nbsp;
