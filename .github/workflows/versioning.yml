@@ -1,55 +1,73 @@
 name: Versioning
 
 on:
-  pull_request:
-    branches: [ "main" ]
+  push:
+    branches:
+      - "main"
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   versioning:
-    name: Versioning analysis
+    name: Versioning
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semver.outputs.next }}
     steps:
-      - name: Set up semver tool
-        run: sudo wget -O /usr/local/bin/semver https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver && semver --version
-
-      - name: Get last tag
-        run: lasttag=$(git describe --tags --abbrev=0)
-
-      - name: Validating tag
-        run: 
-      - uses: actions/checkout@v3
+      - name: Set up repository
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Setup Go Environment
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
+          ref: ${{ github.event.push.head.ref }}
       
-      - name: Run unit test with coverage report
-        run: go test -v ./... -coverprofile=coverage.out -covermode=count
+      - name: Get next version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          majorList: BREAKING CHANGE, BREAKING, MAJOR
+          minorList: FEATURE, Feature, feature, FEAT, Feat, feat
+          patchList: FIX, Fix, fix, FIXED, Fixed, fixed, config, conf, cofiguration, configure, build, rebuild, doc, docu, document, documentation
+          patchAll: false
+      
+      - name: Push tags
+        id: push-tags
+        run: |
+          #!/bin/sh
+          # Get minor tag
+          minor=$(echo ${{ steps.semver.outputs.next }} | sed 's/.[0-9]\{1,\}$//')
+          # Get major tag
+          major=$(echo ${{ steps.semver.outputs.next }} | sed 's/.[0-9]\{1,\}.[0-9]\{1,\}$//')
+          # Set new tags and force update
+          git tag ${{ steps.semver.outputs.next }}
+          git tag --force $minor
+          git tag --force $major
+          # Push new tag forcing the update of the minor and major tag
+          git push --tag --force
 
-      - name: Save coverage file
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-file
-          path: ./coverage.out
-  
-  codecov:
-    name: Upload coverage report
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download coverage file
-        uses: actions/download-artifact@v3
-        with:
-          name: coverage-file
+      - name: Create Release from PR
+        id: create-release-from-pr
+        if: github.event.head_commit.committer.username == 'web-flow'
+        run: |
+          #!/bin/sh
+          # The last commit was committed by GitHub.
+          # We assume that the push event come of the a potential pull-request.
+          gh release create ${{ steps.semver.outputs.next }} \
+          --title 'Release ${{ steps.semver.outputs.next }}' \
+          --notes "Changelog Contents :sunglasses:" \
+          --generate-notes \
 
-      - name: Uploading coverage file to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          name: codecov-umbrella
-          file: coverage.out
-          fail_ci_if_error: true
-          flags: unittests
-          verbose: true
+      - name: Create Release from Commits
+        id: create-release-from-commits
+        if: github.event.head_commit.committer.username != 'web-flow'
+        run: |
+          #!/bin/sh
+          
+          echo "::warning ::There were no pull requests associated with the commits included in this release. Automatically-generated notes were not generated."
+          # The last commit was not committed by GitHub.
+          # We assume that the push event come directly.
+          gh release create ${{ steps.semver.outputs.next }} \
+          --title 'Release ${{ steps.semver.outputs.next }}' \
+          --notes "Changelog Contents :sunglasses:" \
+          --generate-notes \
