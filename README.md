@@ -28,8 +28,9 @@
 [![Tests](https://github.com/mauroalderete/gcode-core/actions/workflows/tests.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/tests.yml)
 [![CodeQL](https://github.com/mauroalderete/gcode-core/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/mauroalderete/gcode-core/actions/workflows/codeql-analysis.yml)
 [![codecov](https://codecov.io/gh/mauroalderete/gcode-core/branch/main/graph/badge.svg?token=U6MTOGMQFM)](https://codecov.io/gh/mauroalderete/gcode-core)
-[![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mauroalderete/gcode-core.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mauroalderete/gcode-core/alerts/)
+[![Maintainability](https://api.codeclimate.com/v1/badges/8fb5ba0230e2855815ad/maintainability)](https://codeclimate.com/github/mauroalderete/gcode-core/maintainability)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mauroalderete/gcode-core)](https://goreportcard.com/report/github.com/mauroalderete/gcode-core)
 
 <a href="https://github.com/mauroalderete/gcode-core/issues/new/choose">Report Bug</a>
 ·
