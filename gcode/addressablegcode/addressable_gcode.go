@@ -11,7 +11,6 @@ package addressablegcode
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/mauroalderete/gcode-core/gcode"
@@ -79,15 +78,33 @@ func (g *Gcode[T]) SetAddress(address T) error {
 // String return gcode formatted
 func (g *Gcode[T]) String() string {
 
-	if float32Value, ok := any(g.address).(float32); ok {
-		sv := strconv.FormatFloat(float64(float32Value), 'f', -1, 32)
-		if !strings.Contains(sv, ".") {
-			sv += ".0"
+	var address string
+
+	switch value := any(g.address).(type) {
+	case float32:
+		{
+			switch value {
+			case 0:
+				{
+					address = "0.0"
+				}
+			case float32(int(value)):
+				{
+					address = fmt.Sprintf("%.1f", value)
+				}
+			default:
+				{
+					address = strings.TrimRight(fmt.Sprintf("%.3f", value), "0")
+				}
+			}
 		}
-		return fmt.Sprintf("%s%s", string(g.word), sv)
+	default:
+		{
+			address = fmt.Sprintf("%v", g.address)
+		}
 	}
 
-	return fmt.Sprintf("%s%v", string(g.word), g.address)
+	return fmt.Sprintf("%s%s", string(g.word), address)
 }
 
 // Word return a copy of the word struct in the gcode
