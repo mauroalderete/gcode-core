@@ -300,4 +300,49 @@ func TestAddressableGcodeWord(t *testing.T) {
 	})
 }
 
+func TestAddressableGcodeString(t *testing.T) {
+	t.Run("float32", func(t *testing.T) {
+
+		var a float32 = 1.2
+		var b float32 = 0.5
+
+		cases := map[string]struct {
+			address float32
+			output  string
+		}{
+			"0": {1, "1.0"},
+			"a": {0, "0.0"},
+			"b": {1.1, "1.1"},
+			"c": {2.2, "2.2"},
+			"d": {float32(1.2), "1.2"},
+			"e": {float32(0.5), "0.5"},
+			"f": {1.2 - 0.5, "0.7"},
+			"g": {float32(1.2) - 0.5, "0.7"},
+			"h": {1.2 - float32(0.5), "0.7"},
+			"i": {float32(1.2) - float32(0.5), "0.7"},
+			"j": {float32(float32(1.2) - float32(0.5)), "0.7"},
+			"k": {a - b, "0.7"},
+			"l": {a / b, "2.4"},
+			"m": {a * b, "0.6"},
+			"n": {a * 0.5, "0.6"},
+			"o": {b / 0.5, "1.0"},
+		}
+
+		for name, tc := range cases {
+			t.Run(name, func(t *testing.T) {
+				gc, err := New('G', tc.address)
+				if err != nil {
+					t.Errorf("failed prepare mock")
+					return
+				}
+
+				if gc.String() != fmt.Sprintf("G%s", tc.output) {
+					t.Errorf("failed print, expected %s, got %s", fmt.Sprintf("G%s", tc.output), gc.String())
+					return
+				}
+			})
+		}
+	})
+}
+
 //#endregion
