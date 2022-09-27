@@ -83,18 +83,32 @@ func (g *Gcode[T]) String() string {
 	switch value := any(g.address).(type) {
 	case float32:
 		{
-			switch value {
-			case 0:
+			switch g.Word() {
+			case 'E':
 				{
-					address = "0.0"
-				}
-			case float32(int(value)):
-				{
-					address = fmt.Sprintf("%.1f", value)
+					switch {
+					case value < 0.0001:
+						{
+							address = "0.0000"
+						}
+					default:
+						{
+							address = fmt.Sprintf("%.4f", value)
+						}
+					}
 				}
 			default:
 				{
-					address = strings.TrimRight(fmt.Sprintf("%.3f", value), "0")
+					switch {
+					case value < 0.001:
+						{
+							address = "0.000"
+						}
+					default:
+						{
+							address = fmt.Sprintf("%.3f", value)
+						}
+					}
 				}
 			}
 		}
