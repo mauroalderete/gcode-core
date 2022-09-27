@@ -136,7 +136,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 						t.Errorf("got error %v, want error nil", err)
 						return
 					}
-					if gc.String() != fmt.Sprintf("%s%.1f", string(tc.word), tc.address) {
+					if gc.String() != fmt.Sprintf("%s%.3f", string(tc.word), tc.address) {
 						t.Errorf("got gcode %s, want gcode %s%.1f", gc, string(tc.word), tc.address)
 					}
 				} else {

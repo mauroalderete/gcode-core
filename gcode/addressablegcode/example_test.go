@@ -18,7 +18,7 @@ func ExampleNew() {
 
 	fmt.Printf("%s", gc)
 
-	// Output: X12.3
+	// Output: X12.300
 }
 
 func ExampleGcode_Address() {
