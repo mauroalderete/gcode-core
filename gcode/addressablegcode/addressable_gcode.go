@@ -11,6 +11,7 @@ package addressablegcode
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/mauroalderete/gcode-core/gcode"
@@ -87,7 +88,7 @@ func (g *Gcode[T]) String() string {
 			case 'E':
 				{
 					switch {
-					case value < 0.0001:
+					case math.Abs(float64(value)) < 0.0001:
 						{
 							address = "0.0000"
 						}
@@ -100,7 +101,7 @@ func (g *Gcode[T]) String() string {
 			default:
 				{
 					switch {
-					case value < 0.001:
+					case math.Abs(float64(value)) < 0.001:
 						{
 							address = "0.000"
 						}
