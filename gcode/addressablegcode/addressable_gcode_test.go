@@ -136,7 +136,7 @@ func TestNewGcodeAddressable(t *testing.T) {
 						t.Errorf("got error %v, want error nil", err)
 						return
 					}
-					if gc.String() != fmt.Sprintf("%s%.1f", string(tc.word), tc.address) {
+					if gc.String() != fmt.Sprintf("%s%.3f", string(tc.word), tc.address) {
 						t.Errorf("got gcode %s, want gcode %s%.1f", gc, string(tc.word), tc.address)
 					}
 				} else {
@@ -301,7 +301,7 @@ func TestAddressableGcodeWord(t *testing.T) {
 }
 
 func TestAddressableGcodeString(t *testing.T) {
-	t.Run("float32", func(t *testing.T) {
+	t.Run("float32 defult params", func(t *testing.T) {
 
 		var a float32 = 1.2
 		var b float32 = 0.5
@@ -310,34 +310,79 @@ func TestAddressableGcodeString(t *testing.T) {
 			address float32
 			output  string
 		}{
-			"0": {1, "1.0"},
-			"a": {0, "0.0"},
-			"b": {1.1, "1.1"},
-			"c": {2.2, "2.2"},
-			"d": {float32(1.2), "1.2"},
-			"e": {float32(0.5), "0.5"},
-			"f": {1.2 - 0.5, "0.7"},
-			"g": {float32(1.2) - 0.5, "0.7"},
-			"h": {1.2 - float32(0.5), "0.7"},
-			"i": {float32(1.2) - float32(0.5), "0.7"},
-			"j": {float32(float32(1.2) - float32(0.5)), "0.7"},
-			"k": {a - b, "0.7"},
-			"l": {a / b, "2.4"},
-			"m": {a * b, "0.6"},
-			"n": {a * 0.5, "0.6"},
-			"o": {b / 0.5, "1.0"},
+			"0": {1, "1.000"},
+			"a": {0, "0.000"},
+			"b": {1.1, "1.100"},
+			"c": {2.2, "2.200"},
+			"d": {float32(1.2), "1.200"},
+			"e": {float32(0.5), "0.500"},
+			"f": {1.2 - 0.5, "0.700"},
+			"g": {float32(1.2) - 0.5, "0.700"},
+			"h": {1.2 - float32(0.5), "0.700"},
+			"i": {float32(1.2) - float32(0.5), "0.700"},
+			"j": {float32(float32(1.2) - float32(0.5)), "0.700"},
+			"k": {a - b, "0.700"},
+			"l": {a / b, "2.400"},
+			"m": {a * b, "0.600"},
+			"n": {a * 0.5, "0.600"},
+			"o": {b / 0.5, "1.000"},
+			"p": {15.0003, "15.000"},
 		}
 
 		for name, tc := range cases {
 			t.Run(name, func(t *testing.T) {
-				gc, err := New('G', tc.address)
+				gc, err := New('X', tc.address)
 				if err != nil {
 					t.Errorf("failed prepare mock")
 					return
 				}
 
-				if gc.String() != fmt.Sprintf("G%s", tc.output) {
-					t.Errorf("failed print, expected %s, got %s", fmt.Sprintf("G%s", tc.output), gc.String())
+				if gc.String() != fmt.Sprintf("X%s", tc.output) {
+					t.Errorf("failed print, expected %s, got %s", fmt.Sprintf("X%s", tc.output), gc.String())
+					return
+				}
+			})
+		}
+	})
+
+	t.Run("float32 E param", func(t *testing.T) {
+
+		var a float32 = 1.2
+		var b float32 = 0.5
+
+		cases := map[string]struct {
+			address float32
+			output  string
+		}{
+			"0": {1, "1.0000"},
+			"a": {0, "0.0000"},
+			"b": {1.1, "1.1000"},
+			"c": {2.2, "2.2000"},
+			"d": {float32(1.2), "1.2000"},
+			"e": {float32(0.5), "0.5000"},
+			"f": {1.2 - 0.5, "0.7000"},
+			"g": {float32(1.2) - 0.5, "0.7000"},
+			"h": {1.2 - float32(0.5), "0.7000"},
+			"i": {float32(1.2) - float32(0.5), "0.7000"},
+			"j": {float32(float32(1.2) - float32(0.5)), "0.7000"},
+			"k": {a - b, "0.7000"},
+			"l": {a / b, "2.4000"},
+			"m": {a * b, "0.6000"},
+			"n": {a * 0.5, "0.6000"},
+			"o": {b / 0.5, "1.0000"},
+			"p": {15.0003, "15.0003"},
+		}
+
+		for name, tc := range cases {
+			t.Run(name, func(t *testing.T) {
+				gc, err := New('E', tc.address)
+				if err != nil {
+					t.Errorf("failed prepare mock")
+					return
+				}
+
+				if gc.String() != fmt.Sprintf("E%s", tc.output) {
+					t.Errorf("failed print, expected %s, got %s", fmt.Sprintf("E%s", tc.output), gc.String())
 					return
 				}
 			})

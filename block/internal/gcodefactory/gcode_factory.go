@@ -156,8 +156,7 @@ func (g *GcodeFactory) Parse(source string) (gcode.Gcoder, error) {
 
 	// contains a float address
 	if strings.Contains(source, ".") {
-
-		val, err := strconv.ParseFloat(source[1:], 32)
+		val, err := strconv.ParseFloat(source[1:], 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse %s, error to try get float address: %w", source, err)
 		}

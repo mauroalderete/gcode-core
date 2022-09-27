@@ -143,7 +143,7 @@ func TestGcodeAddressableFactoryNewGcodeAddressable(t *testing.T) {
 						t.Errorf("got error %v, want error nil", err)
 						return
 					}
-					if gc.String() != fmt.Sprintf("%s%.1f", string(tc.word), tc.address) {
+					if gc.String() != fmt.Sprintf("%s%.3f", string(tc.word), tc.address) {
 						t.Errorf("got gcode %s, want gcode %s%.1f", gc, string(tc.word), tc.address)
 					}
 				} else {
@@ -206,13 +206,13 @@ func TestParse(t *testing.T) {
 		output string
 	}{
 		"command_0":      {"G92", true, "G92"},
-		"command_1":      {"G92.3", true, "G92.3"},
+		"command_1":      {"G92.3", true, "G92.300"},
 		"command_2":      {"G\"hola\"", true, "G\"hola\""},
 		"command_3":      {"N1", true, "N1"},
 		"command_4":      {"*1", true, "*1"},
 		"command_5":      {"G", true, "G"},
 		"command_6":      {"G-92", true, "G-92"},
-		"command_7":      {"G-92.0", true, "G-92.0"},
+		"command_7":      {"G-92.1", true, "G-92.100"},
 		"command_8":      {"N92.0", false, ""},
 		"command_fail_0": {"G 92", false, ""},
 		"command_fail_1": {"K92.3", false, ""},

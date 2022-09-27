@@ -63,5 +63,5 @@ func ExampleBlocker() {
 
 	fmt.Println(b.ToLine("%l %c %p%k %m"))
 
-	// Output: N7 G1 X2.0 Y2.0 F3000.0*85 ;lorem ipsum
+	// Output: N7 G1 X2.000 Y2.000 F3000.000*85 ;lorem ipsum
 }

@@ -63,7 +63,7 @@ func ExampleNew() {
 
 	fmt.Println(b.ToLine("%l %c %p%k %m"))
 
-	// Output: N7 G1 X2.0 Y2.0 F3000.0*85 ;lorem ipsum
+	// Output: N7 G1 X2.000 Y2.000 F3000.000*85 ;lorem ipsum
 }
 
 func ExampleParse() {
@@ -77,7 +77,7 @@ func ExampleParse() {
 
 	fmt.Printf("line is: %s\n", b.String())
 
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
+	// Output: line is: N7 G1 X2.000 Y2.000 F3000.000
 }
 
 func ExampleGcodeBlock_Command() {
@@ -152,7 +152,7 @@ func ExampleGcodeBlock_UpdateChecksum() {
 	fmt.Printf("the block with checksum is: %s\n", b.ToLine("%l %c %p%k"))
 
 	// Output:
-	// the block with checksum is: N7 G1 X2.0 Y2.0 F3000.0*85
+	// the block with checksum is: N7 G1 X2.000 Y2.000 F3000.000*85
 }
 
 func ExampleGcodeBlock_VerifyChecksum() {
@@ -174,7 +174,7 @@ func ExampleGcodeBlock_VerifyChecksum() {
 	fmt.Printf("the block is verified: %v\n", checked)
 
 	// Output:
-	// the block 'N7 G1 X2.0 Y2.0 F3000.0' hasn't check section
+	// the block 'N7 G1 X2.000 Y2.000 F3000.000' hasn't check section
 }
 
 func ExampleGcodeBlock_LineNumber() {
@@ -215,9 +215,9 @@ func ExampleGcodeBlock_Parameters() {
 	}
 
 	// Output:
-	// [0]: X2.0
-	// [1]: Y2.0
-	// [2]: F3000.0
+	// [0]: X2.000
+	// [1]: Y2.000
+	// [2]: F3000.000
 }
 
 func ExampleGcodeBlock_String() {
@@ -231,7 +231,7 @@ func ExampleGcodeBlock_String() {
 
 	fmt.Printf("line is: %s\n", b.String())
 
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
+	// Output: line is: N7 G1 X2.000 Y2.000 F3000.000
 }
 
 func ExampleGcodeBlock_ToLine() {
@@ -245,7 +245,7 @@ func ExampleGcodeBlock_ToLine() {
 
 	fmt.Printf("line is: %s\n", b.ToLine("%c %p"))
 
-	// Output: line is: G1 X2.0 Y2.0 F3000.0
+	// Output: line is: G1 X2.000 Y2.000 F3000.000
 }
 
 func ExampleGcodeBlock_ToLine_second() {
@@ -259,7 +259,7 @@ func ExampleGcodeBlock_ToLine_second() {
 
 	fmt.Printf("line is: %s\n", b.ToLine("%l %c %p%k"))
 
-	// Output: line is: N7 G1 X2.0 Y2.0 F3000.0
+	// Output: line is: N7 G1 X2.000 Y2.000 F3000.000
 }
 
 func ExampleGcodeBlock_ToLine_third() {
