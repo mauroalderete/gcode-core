@@ -331,7 +331,7 @@ func Parse(source string, options ...block.BlockParserConfigurationCallbackable)
 	parseQuotesSimplify := string(quoteRegex.ReplaceAll([]byte(parse), []byte{'#', '#'}))
 
 	// get gcodes index from parseQuotesSimplify
-	gcodesRegex := regexp.MustCompile(`(?U)(\w-?\d+(\.\d+)?\s)|((^\w")|(\s*\w(##)*")).*"|(\s*;.*$)|(\w-?\d+(\.\d+)?$)`)
+	gcodesRegex := regexp.MustCompile(`(?U)(\w-?\d+(\.\d+)?\s)|(\w\.\d+\s)|(((^\w")|(\s*\w(##)*")).*")|(\w-?\d+(\.\d+)?$)|(\w\.\d+$)`)
 	gcodesMatchIndex := gcodesRegex.FindAllStringIndex(parseQuotesSimplify, -1)
 	if gcodesMatchIndex == nil {
 		return nil, fmt.Errorf("failed to try get command gcode: There isn't match to (%d):%s", len(parse), parse)
